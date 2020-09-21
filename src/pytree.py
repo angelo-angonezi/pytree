@@ -33,11 +33,10 @@ def get_args_dict() -> dict:
     parser = argparse.ArgumentParser(description="PyTree - 'tree' command running in python")
 
     # adding arguments to parser
-    parser.add_argument('-s', '--start-path',
+    parser.add_argument('start_path', nargs='*',
                         type=str,
-                        required=False,
                         help='Defines path to directory to start building the tree.',
-                        default=DEFAULT_START_PATH)
+                        default='.')
 
     parser.add_argument('-b', '--debug',
                         type=str,
@@ -62,12 +61,6 @@ def get_args_dict() -> dict:
                         required=False,
                         help='Tree displays files and folder sizes, in megabytes.',
                         default=False)
-
-    # saving arguments to a dictionary instance
-    # known_args = parser.parse_known_args()
-    # print(known_args)
-    # for arg in known_args:
-    #     print(type(arg))
 
     args_dict = vars(parser.parse_args())
 
@@ -200,16 +193,15 @@ def pytree(start_path: str = '.',
 def main():
     # getting args dict
     args_dict = get_args_dict()
-    start_path = args_dict['start_path']
+    start_path = args_dict['start_path'][0]
     debug_toggle = args_dict['debug']
     include_files_param = not(args_dict['files_only'])
     include_directories_param = not(args_dict['dirs_only'])
     include_sizes_param = args_dict['show_sizes']
 
-    # getting tree
-
     # checking debug toggle
     if debug_toggle:
+        # getting debug tree
         pytree(start_path=DEBUG_FOLDER,
                include_files=True,
                include_directories=True,
@@ -217,6 +209,7 @@ def main():
                force_absolute_ids=False)
 
     else:
+        # getting tree
         pytree(start_path=start_path,
                include_files=include_files_param,
                include_directories=include_directories_param,
