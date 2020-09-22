@@ -131,7 +131,4 @@ dmypy.json
 # PyCharm related
 .idea/*
 
-# test folders related
-/test_folder/*
-
 # end of current module
