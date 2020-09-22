@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # pytree module
 # Code destined to simulating 'tree' command from Linux, but running on python
 
