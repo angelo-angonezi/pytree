@@ -31,13 +31,20 @@ Examples:
 
 $ pytree.py test_folder/
 test_folder/
+
 ├── another_folder/
+
 │   └── one_mb_file.txt
+
 └── folder/
-    ├── folder_inside_folder/
-    │   ├── ten_kb_file.txt
-    │   └── two_mb_file.txt
-    └── ten_mb_file.txt
+
+├── folder_inside_folder/
+
+│   ├── ten_kb_file.txt
+
+│   └── two_mb_file.txt
+
+└── ten_mb_file.txt
 
 3 directories, 4 files
 
