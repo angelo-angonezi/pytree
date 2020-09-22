@@ -4,20 +4,24 @@
 ######################################################################
 # imports
 
+import os
 import argparse
-from os import walk
 from treelib import Tree
 from pathlib import Path
 
 #####################################################################
 # toggle debug
 
-DEBUG = False
+DEBUG = True
 
 #####################################################################
 # defining default values
 DEBUG_FOLDER = './../test_folder'
 DEFAULT_START_PATH = '.'
+ONE_BYTE = 1
+ONE_KB = 1024 * ONE_BYTE
+ONE_MB = 1024 * ONE_KB
+ONE_GB = 1024 * ONE_MB
 
 #####################################################################
 # argument parsing related functions
@@ -52,6 +56,7 @@ def get_args_dict() -> dict:
                         help='tree displays files and folder sizes, in mega or gigabytes',
                         default=False)
 
+    # creating arguments dictionary
     args_dict = vars(parser.parse_args())
 
     # returning the arguments dictionary
@@ -60,6 +65,106 @@ def get_args_dict() -> dict:
 
 ######################################################################
 # defining auxiliary functions
+
+def get_absolute_path(path_to_file_or_folder: str) -> str:
+    """
+    Given a path to a file or folder, returns its absolute path.
+    :param path_to_file_or_folder: String. Represents partial path.
+    :return: String. Represents absolute system path.
+    """
+    partial_path = Path(path_to_file_or_folder)
+    absolute_path = partial_path.absolute()
+    return absolute_path
+
+
+def from_bytes_to_kilobytes(value_in_bytes: int) -> float:
+    """
+    Given a value in bytes, returns equivalent value in kilobytes.
+    :param value_in_bytes: Integer. Represents file size value in bytes.
+    :return: Float. Represents size value in kilobytes.
+    """
+    value_in_kilobytes = value_in_bytes / ONE_KB
+    return value_in_kilobytes
+
+
+def from_bytes_to_megabytes(value_in_bytes: int) -> float:
+    """
+    Given a value in bytes, returns equivalent value in megabytes.
+    :param value_in_bytes: Integer. Represents file size value in bytes.
+    :return: Float. Represents size value in megabytes.
+    """
+    value_in_megabytes = value_in_bytes / ONE_MB
+    return value_in_megabytes
+
+
+def from_bytes_to_gigabytes(value_in_bytes: int) -> float:
+    """
+    Given a value in bytes, returns equivalent value in gigabytes.
+    :param value_in_bytes: Integer. Represents file size value in bytes.
+    :return: Float. Represents size value in gigabytes.
+    """
+    value_in_gigabytes = value_in_bytes / ONE_GB
+    return value_in_gigabytes
+
+
+def get_adjusted_file_size(file_size_in_bytes: int) -> str:
+    """
+    Given file disk size in bytes, returns string containing file size in
+    bytes, megabytes, or gigabytes, according to file size.
+    :param file_size_in_bytes: String. Represents a path to a file or folder.
+    :return: String. Represents file disk size in bytes, megabytes, or gigabytes.
+    """
+    # if file size is smaller than a megabyte
+    adjusted_size_string = f'{file_size_in_bytes} bytes'
+
+    # rewriting string if file size is bigger than a kilobyte
+    if file_size_in_bytes >= ONE_KB:
+        adjusted_file_size = from_bytes_to_kilobytes(value_in_bytes=file_size_in_bytes)
+        adjusted_file_size = round(adjusted_file_size, 2)
+        adjusted_size_string = f'{adjusted_file_size} kb'
+
+    # rewriting string if file size is bigger than a megabyte
+    if file_size_in_bytes >= ONE_MB:
+        adjusted_file_size = from_bytes_to_megabytes(value_in_bytes=file_size_in_bytes)
+        adjusted_file_size = round(adjusted_file_size, 2)
+        adjusted_size_string = f'{adjusted_file_size} mb'
+
+    # rewriting string if file size is bigger than a gigabyte
+    if file_size_in_bytes >= ONE_GB:
+        adjusted_file_size = from_bytes_to_gigabytes(value_in_bytes=file_size_in_bytes)
+        adjusted_file_size = round(adjusted_file_size, 2)
+        adjusted_size_string = f'{adjusted_file_size} gb'
+
+    # returning adjusted string
+    return adjusted_size_string
+
+
+def get_file_size_in_bytes(file_path: str) -> int:
+    """
+    Given a path to a file, returns file disk size in bytes.
+    :param file_path: String. Represents a path to a file or folder
+    :return: Integer. Represents file disk size in bytes.
+    """
+    return os.path.getsize(file_path)
+
+
+def get_folder_size_in_bytes(path_to_folder: str) -> int:
+    """
+    Given a path to a file, returns file disk size in bytes.
+    :param path_to_folder: String. Represents a path to a file or folder
+    :return: Integer. Represents folder disk size in bytes.
+    """
+    full_dir_size = 0
+    everything_in_folder = os.walk(path_to_folder)
+
+    # iterating over dirs and files
+    for root, _, files in everything_in_folder:
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_size = get_file_size_in_bytes(file_path=file_path)
+            full_dir_size += file_size
+
+    return full_dir_size
 
 
 def pytree(start_path: str = '.',
@@ -81,7 +186,7 @@ def pytree(start_path: str = '.',
     first = True
 
     # getting dirs and files
-    all_files_and_folders = walk(start_path)
+    all_files_and_folders = os.walk(start_path)
 
     # starting dirs, files and size count
     total_dirs_num = 0
@@ -98,8 +203,11 @@ def pytree(start_path: str = '.',
             parent = p_root.parent
             parent_id = parent.absolute() if force_absolute_ids else parent
 
+        # getting absolute path
+        abs_path = p_root.absolute()
+
         # getting root id
-        p_root_id = p_root.absolute() if force_absolute_ids else p_root
+        p_root_id = abs_path if force_absolute_ids else p_root
 
         # getting dir name
         dir_name = (p_root.name if p_root.name != "" else ".")
@@ -107,8 +215,9 @@ def pytree(start_path: str = '.',
 
         # adding dir size to name
         if include_sizes:
-            dir_size = '(here goes the folder size in mb)'
-            dir_name += f' {dir_size}'
+            dir_size_in_bytes = get_folder_size_in_bytes(path_to_folder=abs_path)
+            adjusted_dir_size = get_adjusted_file_size(file_size_in_bytes=dir_size_in_bytes)
+            dir_name += f' ({adjusted_dir_size})'
 
         # creating folder node
         tree.create_node(tag=dir_name,
@@ -127,8 +236,9 @@ def pytree(start_path: str = '.',
 
                 # adding file size to name
                 if include_sizes:
-                    file_size = '(here goes the file size in mb)'
-                    file_name += f' {file_size}'
+                    file_size_in_bytes = get_file_size_in_bytes(file_path=f_id)
+                    adjusted_file_size = get_adjusted_file_size(file_size_in_bytes=file_size_in_bytes)
+                    file_name += f' ({adjusted_file_size})'
 
                 # creating file node
                 tree.create_node(tag=file_name,
@@ -157,8 +267,9 @@ def pytree(start_path: str = '.',
 
     # adding full size
     if include_sizes:
-        full_size = f'(here goes full size of start path)'
-        full_size_string = f' {full_size}'
+        full_size = get_folder_size_in_bytes(path_to_folder=start_path)
+        adjusted_full_size = get_adjusted_file_size(file_size_in_bytes=full_size)
+        full_size_string = f', {adjusted_full_size}'
         dirs_and_files_string += full_size_string
 
     # getting tree size
