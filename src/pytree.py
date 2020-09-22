@@ -6,14 +6,13 @@
 
 import argparse
 from os import walk
-from sys import argv
 from treelib import Tree
 from pathlib import Path
 
 #####################################################################
 # toggle debug
 
-DEBUG = True
+DEBUG = False
 
 #####################################################################
 # defining default values
@@ -29,37 +28,28 @@ def get_args_dict() -> dict:
     Parses the arguments and returns a dictionary of the arguments.
     :return: Dictionary. Represents the parsed arguments.
     """
+    # defining program description
+    description = "pytree - improved 'tree' command running in python\n"
+
     # creating a parser instance
-    parser = argparse.ArgumentParser(description="PyTree - 'tree' command running in python")
+    parser = argparse.ArgumentParser(description=description)
 
     # adding arguments to parser
     parser.add_argument('start_path', nargs='*',
                         type=str,
-                        help='Defines path to directory to start building the tree.',
+                        help='defines path to directory to start building the tree',
                         default='.')
 
-    parser.add_argument('-b', '--debug',
-                        type=str,
-                        required=False,
-                        help='Defines whether code runs in debug mode.',
-                        default=False)
-
     parser.add_argument('-d', '--dirs-only',
-                        type=str,
-                        required=False,
-                        help='Tree displays directories only, and does not show files inside folders.',
+                        dest='dirs_only_flag',
+                        action='store_true',
+                        help='tree displays directories only, and does not show files inside folders',
                         default=False)
 
-    parser.add_argument('-f', '--files-only',
-                        type=str,
-                        required=False,
-                        help='Tree displays files only, and does not show directories or folders.',
-                        default=False)
-
-    parser.add_argument('-p', '--show-sizes',
-                        type=str,
-                        required=False,
-                        help='Tree displays files and folder sizes, in megabytes.',
+    parser.add_argument('-s', '--show-sizes',
+                        dest='show_sizes_flag',
+                        action='store_true',
+                        help='tree displays files and folder sizes, in mega or gigabytes',
                         default=False)
 
     args_dict = vars(parser.parse_args())
@@ -74,7 +64,6 @@ def get_args_dict() -> dict:
 
 def pytree(start_path: str = '.',
            include_files: bool = True,
-           include_directories: bool = True,
            include_sizes: bool = False,
            force_absolute_ids: bool = True
            ) -> None:
@@ -83,7 +72,6 @@ def pytree(start_path: str = '.',
     You can then print the `Tree` object using `tree.show()`
     :param start_path: String. Represents an absolute or relative path.
     :param include_files: Boolean. Indicates whether to also include the files in the tree.
-    :param include_directories: Boolean. Indicates whether to also include the directories in the tree.
     :param include_sizes: Boolean. Indicates whether or not tree should display file and folder sizes, in megabytes.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
     be relative if start_path is relative, and absolute otherwise.
@@ -113,20 +101,19 @@ def pytree(start_path: str = '.',
         # getting root id
         p_root_id = p_root.absolute() if force_absolute_ids else p_root
 
-        if include_directories:
-            # getting dir name
-            dir_name = (p_root.name if p_root.name != "" else ".")
-            dir_name += '/'
+        # getting dir name
+        dir_name = (p_root.name if p_root.name != "" else ".")
+        dir_name += '/'
 
-            # adding dir size to name
-            if include_sizes:
-                dir_size = '(here goes the folder size in mb)'
-                dir_name += f' {dir_size}'
+        # adding dir size to name
+        if include_sizes:
+            dir_size = '(here goes the folder size in mb)'
+            dir_name += f' {dir_size}'
 
-            # creating folder node
-            tree.create_node(tag=dir_name,
-                             identifier=p_root_id,
-                             parent=parent_id)
+        # creating folder node
+        tree.create_node(tag=dir_name,
+                         identifier=p_root_id,
+                         parent=parent_id)
 
         # increasing total dirs count
         total_dirs_num += 1
@@ -193,18 +180,23 @@ def pytree(start_path: str = '.',
 def main():
     # getting args dict
     args_dict = get_args_dict()
+
+    # checking if user has passed specific folder
     start_path = args_dict['start_path'][0]
-    debug_toggle = args_dict['debug']
-    include_files_param = not(args_dict['files_only'])
-    include_directories_param = not(args_dict['dirs_only'])
-    include_sizes_param = args_dict['show_sizes']
+    if start_path is None:
+        start_path = DEFAULT_START_PATH
+
+    # checking whether tree should contain only dirs or also the files
+    include_files_param = not(args_dict['dirs_only_flag'])
+
+    # checking whether tree should contain file and folder size information
+    include_sizes_param = args_dict['show_sizes_flag']
 
     # checking debug toggle
-    if debug_toggle:
+    if DEBUG:
         # getting debug tree
         pytree(start_path=DEBUG_FOLDER,
                include_files=True,
-               include_directories=True,
                include_sizes=True,
                force_absolute_ids=False)
 
@@ -212,7 +204,6 @@ def main():
         # getting tree
         pytree(start_path=start_path,
                include_files=include_files_param,
-               include_directories=include_directories_param,
                include_sizes=include_sizes_param,
                force_absolute_ids=False)
 
