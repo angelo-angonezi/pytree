@@ -12,7 +12,7 @@ from pathlib import Path
 #####################################################################
 # toggle debug
 
-DEBUG = True
+DEBUG = False
 
 #####################################################################
 # defining default values
@@ -227,26 +227,26 @@ def pytree(start_path: str = '.',
         # increasing total dirs count
         total_dirs_num += 1
 
-        if include_files:
-            # iterating over files
-            for f in files:
-                # getting file name
-                f_id = p_root_id / f
-                file_name = f_id.name
+        # iterating over files
+        for f in files:
+            # getting file name
+            f_id = p_root_id / f
+            file_name = f_id.name
 
-                # adding file size to name
-                if include_sizes:
-                    file_size_in_bytes = get_file_size_in_bytes(file_path=f_id)
-                    adjusted_file_size = get_adjusted_file_size(file_size_in_bytes=file_size_in_bytes)
-                    file_name += f' ({adjusted_file_size})'
+            # adding file size to name
+            if include_sizes:
+                file_size_in_bytes = get_file_size_in_bytes(file_path=f_id)
+                adjusted_file_size = get_adjusted_file_size(file_size_in_bytes=file_size_in_bytes)
+                file_name += f' ({adjusted_file_size})'
 
-                # creating file node
+            # creating file node
+            if include_files:
                 tree.create_node(tag=file_name,
                                  identifier=f_id,
                                  parent=p_root_id)
 
-                # increasing total files count
-                total_files_num += 1
+            # increasing total files count
+            total_files_num += 1
 
     # getting dirs and files string
 
@@ -263,7 +263,7 @@ def pytree(start_path: str = '.',
         files_string = 'files'
 
     # defining dirs and files string
-    dirs_and_files_string = f'{total_dirs_num} {dirs_string}, {total_files_num} {files_string}'
+    dirs_and_files_string = f'{total_dirs_num - 1} {dirs_string}, {total_files_num} {files_string}'
 
     # adding full size
     if include_sizes:
