@@ -144,7 +144,7 @@ def get_adjusted_file_size(file_size_in_bytes: int) -> str:
 def get_file_size_in_bytes(file_path: str) -> int:
     """
     Given a path to a file, returns file disk size in bytes.
-    :param file_path: String. Represents a path to a file or folder
+    :param file_path: String. Represents a path to a file.
     :return: Integer. Represents file disk size in bytes.
     """
     return os.path.getsize(file_path)
@@ -152,8 +152,8 @@ def get_file_size_in_bytes(file_path: str) -> int:
 
 def get_folder_size_in_bytes(path_to_folder: str) -> int:
     """
-    Given a path to a file, returns file disk size in bytes.
-    :param path_to_folder: String. Represents a path to a file or folder
+    Given a path to a folder, returns folder disk size in bytes.
+    :param path_to_folder: String. Represents a path to a folder.
     :return: Integer. Represents folder disk size in bytes.
     """
     full_dir_size = 0
@@ -167,6 +167,18 @@ def get_folder_size_in_bytes(path_to_folder: str) -> int:
             full_dir_size += file_size
 
     return full_dir_size
+
+
+def get_number_of_files_inside_folder(path_to_folder: str) -> int:
+    """
+    Given a path to a folder, returns number of files or folders inside given folder.
+    :param path_to_folder: String. Represents a path to a folder.
+    :return: Integer. Represents number of files or folders inside given folder.
+    """
+    # getting all files and folders inside given folder
+    all_files_and_folders_inside_folder = os.listdir(path_to_folder)
+    file_and_folder_count = len(all_files_and_folders_inside_folder)
+    return file_and_folder_count
 
 
 def pytree(start_path: str = '.',
@@ -214,6 +226,12 @@ def pytree(start_path: str = '.',
         # getting dir name
         dir_name = (p_root.name if p_root.name != "" else ".")
         dir_name += '/'
+
+        # getting number of files and folders inside directory
+        current_dir_file_and_folder_count = get_number_of_files_inside_folder(path_to_folder=abs_path)
+
+        # adding count to dir name
+        dir_name += f' [{current_dir_file_and_folder_count}]'
 
         # adding dir size to name
         if include_sizes:
