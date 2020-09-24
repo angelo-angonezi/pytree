@@ -18,7 +18,7 @@ DEBUG = False
 
 #####################################################################
 # defining default values
-DEBUG_FOLDER = './../test_folder'
+DEBUG_FOLDER = os.path.join('..', 'test_folder')
 DEFAULT_START_PATH = '.'
 ONE_BYTE = 1
 ONE_KB = 1024 * ONE_BYTE
@@ -57,6 +57,20 @@ def get_args_dict() -> dict:
                         action='store_true',
                         help='tree displays files and folder sizes, in mega or gigabytes',
                         default=False)
+
+    parser.add_argument('-c', '--show-counts',
+                        dest='show_counts_flag',
+                        action='store_true',
+                        help='tree displays the number of files or folders inside each directory',
+                        default=False)
+
+    #  TODO: add specify extension possibility
+    parser.add_argument('-x', '--extension',
+                        dest='specified_extension',
+                        required=False,
+                        type=str,
+                        help='tree displays the number of files or folders inside each directory',
+                        default='*')
 
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
@@ -184,6 +198,7 @@ def get_number_of_files_inside_folder(path_to_folder: str) -> int:
 def pytree(start_path: str = '.',
            include_files: bool = True,
            include_sizes: bool = False,
+           include_counts: bool = False,
            force_absolute_ids: bool = True
            ) -> None:
     """
@@ -192,6 +207,7 @@ def pytree(start_path: str = '.',
     :param start_path: String. Represents an absolute or relative path.
     :param include_files: Boolean. Indicates whether to also include the files in the tree.
     :param include_sizes: Boolean. Indicates whether or not tree should display file and folder sizes, in megabytes.
+    :param include_counts: Boolean. Indicates whether or not tree should display file and folder counts.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
     be relative if start_path is relative, and absolute otherwise.
     """
@@ -231,7 +247,8 @@ def pytree(start_path: str = '.',
         current_dir_file_and_folder_count = get_number_of_files_inside_folder(path_to_folder=abs_path)
 
         # adding count to dir name
-        dir_name += f' [{current_dir_file_and_folder_count}]'
+        if include_counts:
+            dir_name += f' [{current_dir_file_and_folder_count}]'
 
         # adding dir size to name
         if include_sizes:
@@ -323,12 +340,16 @@ def main():
     # checking whether tree should contain file and folder size information
     include_sizes_param = args_dict['show_sizes_flag']
 
+    # checking whether tree should contain file and folder counts information
+    include_counts_param = args_dict['show_counts_flag']
+
     # checking debug toggle
     if DEBUG:
         # getting debug tree
         pytree(start_path=DEBUG_FOLDER,
                include_files=True,
                include_sizes=True,
+               include_counts=True,
                force_absolute_ids=False)
 
     else:
@@ -336,6 +357,7 @@ def main():
         pytree(start_path=start_path,
                include_files=include_files_param,
                include_sizes=include_sizes_param,
+               include_counts=include_counts_param,
                force_absolute_ids=False)
 
 ######################################################################
