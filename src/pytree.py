@@ -68,7 +68,7 @@ def get_args_dict() -> dict:
                         dest='specified_extension',
                         required=False,
                         type=str or None,
-                        help='tree displays the number of files or folders inside each directory',
+                        help="tree will include only files that match given extension (e.g. '.txt', '.pdf')",
                         default=None)
 
     # creating arguments dictionary
@@ -244,21 +244,27 @@ def pytree(start_path: str = '.',
         dir_name = (p_root.name if p_root.name != "" else ".")
         dir_name += '/'
 
+        # coloring dir string
+        colored_text_string = f"\033[0;34;42m{dir_name}"
+
+        # recoloring to white so that it doesn't affect other nodes
+        colored_text_string += f"\033[0;37;40m"
+
         # getting number of files and folders inside directory
         current_dir_file_and_folder_count = get_number_of_files_inside_folder(path_to_folder=abs_path)
 
         # adding count to dir name
         if include_counts:
-            dir_name += f' [{current_dir_file_and_folder_count}]'
+            colored_text_string += f' [{current_dir_file_and_folder_count}]'
 
         # adding dir size to name
         if include_sizes:
             dir_size_in_bytes = get_folder_size_in_bytes(path_to_folder=abs_path)
             adjusted_dir_size = get_adjusted_file_size(file_size_in_bytes=dir_size_in_bytes)
-            dir_name += f' ({adjusted_dir_size})'
+            colored_text_string += f' ({adjusted_dir_size})'
 
         # creating folder node
-        tree.create_node(tag=dir_name,
+        tree.create_node(tag=colored_text_string,
                          identifier=p_root_id,
                          parent=parent_id)
 
