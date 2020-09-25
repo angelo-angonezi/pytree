@@ -2,7 +2,9 @@
 A simpler 'tree' linux command, running on Python.
 
 Contains flags for displaying file and folder sizes (-s),
-and for hiding files, showing only directories (-d).
+hiding files, showing only directories (-d),
+get file count inside folder (-c) and search for specific file
+extension (-x)
 
 Requirements:
 - python3;
@@ -38,13 +40,13 @@ test_folder/
 
 └── folder/
 
-    ├── folder_inside_folder/
+   ├── folder_inside_folder/
+   
+   │   ├── ten_kb_file.txt
     
-    │   ├── ten_kb_file.txt
+   │   └── two_mb_file.txt
     
-    │   └── two_mb_file.txt
-    
-    └── ten_mb_file.txt
+   └── ten_mb_file.txt
 
 3 directories, 4 files
 
@@ -58,13 +60,13 @@ test_folder/ (13.01 mb)
 
 └── folder/ (12.01 mb) 
 
-    ├── folder_inside_folder/ (2.01 mb) 
+   ├── folder_inside_folder/ (2.01 mb) 
     
-    │   ├── ten_kb_file.txt (10.0 kb) 
+   │   ├── ten_kb_file.txt (10.0 kb) 
+   
+   │   └── two_mb_file.txt (2.0 mb) 
     
-    │   └── two_mb_file.txt (2.0 mb) 
-    
-    └── ten_mb_file.txt (10.0 mb) 
+   └── ten_mb_file.txt (10.0 mb) 
 
 3 directories, 4 files, 13.01 mb 
 
@@ -75,6 +77,6 @@ test_folder/ (13.01 mb)
 
 └── folder/ (12.01 mb) 
 
-    └── folder_inside_folder/ (2.01 mb) 
+   └── folder_inside_folder/ (2.01 mb) 
 
 3 directories, 4 files, 13.01 mb
