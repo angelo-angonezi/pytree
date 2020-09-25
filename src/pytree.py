@@ -64,13 +64,12 @@ def get_args_dict() -> dict:
                         help='tree displays the number of files or folders inside each directory',
                         default=False)
 
-    #  TODO: add specify extension possibility
     parser.add_argument('-x', '--extension',
                         dest='specified_extension',
                         required=False,
-                        type=str,
+                        type=str or None,
                         help='tree displays the number of files or folders inside each directory',
-                        default='*')
+                        default=None)
 
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
@@ -199,6 +198,7 @@ def pytree(start_path: str = '.',
            include_files: bool = True,
            include_sizes: bool = False,
            include_counts: bool = False,
+           specific_extension: str or None = None,
            force_absolute_ids: bool = True
            ) -> None:
     """
@@ -208,6 +208,7 @@ def pytree(start_path: str = '.',
     :param include_files: Boolean. Indicates whether to also include the files in the tree.
     :param include_sizes: Boolean. Indicates whether or not tree should display file and folder sizes, in megabytes.
     :param include_counts: Boolean. Indicates whether or not tree should display file and folder counts.
+    :param specific_extension: String. Represents a specific file extension to be searched.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
     be relative if start_path is relative, and absolute otherwise.
     """
@@ -265,10 +266,16 @@ def pytree(start_path: str = '.',
         total_dirs_num += 1
 
         # iterating over files
-        for f in files:
+        for file in files:
             # getting file name
-            f_id = p_root_id / f
+            f_id = p_root_id / file
             file_name = f_id.name
+
+            # checking if user has passed specific extension
+            if specific_extension is not None:
+                # checking if current file is of specified extension
+                if not file.endswith(specific_extension):
+                    continue
 
             # adding file size to name
             if include_sizes:
@@ -343,6 +350,9 @@ def main():
     # checking whether tree should contain file and folder counts information
     include_counts_param = args_dict['show_counts_flag']
 
+    # checking if user has passed specific extension to be looked for
+    specific_extension_param = args_dict['specified_extension']
+
     # checking debug toggle
     if DEBUG:
         # getting debug tree
@@ -350,6 +360,7 @@ def main():
                include_files=True,
                include_sizes=True,
                include_counts=True,
+               specific_extension='.txt',
                force_absolute_ids=False)
 
     else:
@@ -358,6 +369,7 @@ def main():
                include_files=include_files_param,
                include_sizes=include_sizes_param,
                include_counts=include_counts_param,
+               specific_extension=specific_extension_param,
                force_absolute_ids=False)
 
 ######################################################################
