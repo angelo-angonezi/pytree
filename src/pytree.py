@@ -35,7 +35,7 @@ def get_args_dict() -> dict:
     :return: Dictionary. Represents the parsed arguments.
     """
     # defining program description
-    description = "pytree - improved 'tree' command running in python\n"
+    description = "pytree - a simpler 'tree' command running in python\n"
 
     # creating a parser instance
     parser = argparse.ArgumentParser(description=description)
