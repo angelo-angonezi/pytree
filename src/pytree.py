@@ -20,7 +20,7 @@ from argparse import ArgumentParser
 #####################################################################
 # debug toggle
 
-DEBUG = True
+DEBUG = False
 
 #####################################################################
 # defining default values and global parameters
