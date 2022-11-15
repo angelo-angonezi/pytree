@@ -25,7 +25,7 @@ DEBUG = True
 #####################################################################
 # defining default values and global parameters
 
-DEBUG_FOLDER = join('..', 'test_folder')
+DEBUG_FOLDER = join('.', 'test_folder')
 DEFAULT_START_PATH = '.'
 ONE_BYTE = 1
 ONE_KB = 1024 * ONE_BYTE
@@ -143,35 +143,50 @@ def from_bytes_to_gigabytes(value_in_bytes: int) -> float:
     return value_in_gigabytes
 
 
-def get_adjusted_file_size(file_size_in_bytes: int) -> str:
+def get_adjusted_file_size_string(file_size_in_bytes: int) -> str:
     """
     Given file disk size in bytes, returns string containing file size in
     bytes, megabytes, or gigabytes, according to file size.
     :param file_size_in_bytes: String. Represents a path to a file or folder.
     :return: String. Represents file disk size in bytes, megabytes, or gigabytes.
     """
-    # if file size is smaller than a megabyte
-    adjusted_size_string = f'{file_size_in_bytes} bytes'
-
-    # rewriting string if file size is bigger than a kilobyte
-    if file_size_in_bytes >= ONE_KB:
-        adjusted_file_size = from_bytes_to_kilobytes(value_in_bytes=file_size_in_bytes)
-        adjusted_file_size = round(adjusted_file_size, 2)
-        adjusted_size_string = f'{adjusted_file_size} kb'
-
-    # rewriting string if file size is bigger than a megabyte
-    if file_size_in_bytes >= ONE_MB:
-        adjusted_file_size = from_bytes_to_megabytes(value_in_bytes=file_size_in_bytes)
-        adjusted_file_size = round(adjusted_file_size, 2)
-        adjusted_size_string = f'{adjusted_file_size} mb'
-
-    # rewriting string if file size is bigger than a gigabyte
+    # if file size is larger than a gigabyte
     if file_size_in_bytes >= ONE_GB:
+
+        # getting file size in gigabytes
         adjusted_file_size = from_bytes_to_gigabytes(value_in_bytes=file_size_in_bytes)
         adjusted_file_size = round(adjusted_file_size, 2)
+
+        # writing size string in gigabytes
         adjusted_size_string = f'{adjusted_file_size} gb'
 
-    # returning adjusted string
+    # if file size is larger than a megabyte (but smaller than a gb)
+    elif file_size_in_bytes >= ONE_MB:
+
+        # getting file size in megabytes
+        adjusted_file_size = from_bytes_to_megabytes(value_in_bytes=file_size_in_bytes)
+        adjusted_file_size = round(adjusted_file_size, 2)
+
+        # writing size string in megabytes
+        adjusted_size_string = f'{adjusted_file_size} mb'
+
+    # if file size is larger than a kilobyte (but smaller than a gb or mb)
+    elif file_size_in_bytes >= ONE_KB:
+
+        # getting file size in kilobytes
+        adjusted_file_size = from_bytes_to_kilobytes(value_in_bytes=file_size_in_bytes)
+        adjusted_file_size = round(adjusted_file_size, 2)
+
+        # writing size string in kilobytes
+        adjusted_size_string = f'{adjusted_file_size} kb'
+
+    # if file size is smaller than a kilobyte
+    else:
+
+        # writing size string in bytes
+        adjusted_size_string = f'{file_size_in_bytes} bytes'
+
+    # returning adjusted size string
     return adjusted_size_string
 
 
@@ -298,7 +313,7 @@ def pytree(start_path: str = '.',
         # adding dir size to name
         if include_sizes:
             dir_size_in_bytes = get_folder_size_in_bytes(path_to_folder=abs_path)
-            adjusted_dir_size = get_adjusted_file_size(file_size_in_bytes=dir_size_in_bytes)
+            adjusted_dir_size = get_adjusted_file_size_string(file_size_in_bytes=dir_size_in_bytes)
             colored_text_string += f' ({adjusted_dir_size})'
 
         # creating folder node
@@ -325,7 +340,7 @@ def pytree(start_path: str = '.',
             # adding file size to name
             if include_sizes:
                 file_size_in_bytes = get_file_size_in_bytes(file_path=f_id)
-                adjusted_file_size = get_adjusted_file_size(file_size_in_bytes=file_size_in_bytes)
+                adjusted_file_size = get_adjusted_file_size_string(file_size_in_bytes=file_size_in_bytes)
                 file_name += f' ({adjusted_file_size})'
 
             # creating file node
@@ -357,7 +372,7 @@ def pytree(start_path: str = '.',
     # adding full size
     if include_sizes:
         full_size = get_folder_size_in_bytes(path_to_folder=start_path)
-        adjusted_full_size = get_adjusted_file_size(file_size_in_bytes=full_size)
+        adjusted_full_size = get_adjusted_file_size_string(file_size_in_bytes=full_size)
         full_size_string = f', {adjusted_full_size}'
         dirs_and_files_string += full_size_string
 
