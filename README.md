@@ -1,4 +1,4 @@
-# my_pytree
+# pytree
 A simpler 'tree' linux command, running on Python.
 
 Contains flags for displaying file and folder sizes (-s),
@@ -12,7 +12,7 @@ Requirements:
 
 Installation:
 1. Clone this repository
-2. Change file permissions with 'chmod' (eg. 'chmod 777 pytree.py')
+2. Change file permissions with 'chmod' (e.g. 'chmod 777 pytree.py')
 3. Add pytree.py to path or as an alias in bash_aliases file
 
 Usage:
