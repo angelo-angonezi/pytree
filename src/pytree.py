@@ -258,18 +258,21 @@ def pytree(start_path: str = '.',
            force_absolute_ids: bool = True
            ) -> None:
     """
-    Returns a `treelib.Tree` representing the filesystem under `start_path`.
-    You can then print the `Tree` object using `tree.show()`
+    Prints 'tree' of files and subfolders inside
+    given start folder, including file size and
+    file count, according to given parameters.
     :param start_path: String. Represents an absolute or relative path.
     :param include_files: Boolean. Indicates whether to also include the files in the tree.
-    :param include_sizes: Boolean. Indicates whether or not tree should display file and folder sizes, in megabytes.
-    :param include_counts: Boolean. Indicates whether or not tree should display file and folder counts.
+    :param include_sizes: Boolean. Indicates whether tree should display file and folder sizes, in megabytes.
+    :param include_counts: Boolean. Indicates whether tree should display file and folder counts.
     :param specific_extension: String. Represents a specific file extension to be searched.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
     be relative if start_path is relative, and absolute otherwise.
     """
     # creating tree instance
     tree = Tree()
+
+    # defining first flag
     first = True
 
     # getting dirs and files
@@ -339,8 +342,10 @@ def pytree(start_path: str = '.',
         # iterating over files
         for file in files:
 
-            # getting file name
+            # getting file id
             f_id = p_root_id / file
+
+            # getting file name
             file_name = f_id.name
 
             # checking if user has passed specific extension
@@ -394,9 +399,15 @@ def pytree(start_path: str = '.',
 
     # adding full size
     if include_sizes:
+
+        # getting folder size in bytes
         full_size = get_folder_size_in_bytes(path_to_folder=start_path)
+
+        # getting adjusted folder size string
         adjusted_full_size = get_adjusted_file_size_string(file_size_in_bytes=full_size)
         full_size_string = f', {adjusted_full_size}'
+
+        # appending folder size to dirs and files string
         dirs_and_files_string += full_size_string
 
     # getting tree size
