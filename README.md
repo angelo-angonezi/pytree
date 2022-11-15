@@ -12,8 +12,8 @@ Requirements:
 
 Installation:
 1. Clone this repository
-2. Change file permissions with 'chmod' (e.g. 'chmod 777 pytree.py')
-3. Add pytree.py to path or as an alias in bash_aliases file
+2. Run code via command "python /path_to_install/src/pytree.py"
+3. (optional) Add previous command to path or as an alias in bash_aliases file - so that "pytree" command is available globally
 
 Usage:
 
@@ -31,7 +31,7 @@ optional arguments:
 
 Examples:
 
-$ pytree.py test_folder/
+$ python pytree.py test_folder/
 test_folder/
 
 ├── another_folder/
@@ -51,7 +51,7 @@ test_folder/
 3 directories, 4 files
 
 
-$ pytree.py test_folder/ -s 
+$ python pytree.py test_folder/ -s 
 test_folder/ (13.01 mb)
 
 ├── another_folder/ (1.0 mb) 
@@ -70,7 +70,7 @@ test_folder/ (13.01 mb)
 
 3 directories, 4 files, 13.01 mb 
 
-$ pytree.py test_folder/ -s -d 
+$ python pytree.py test_folder/ -s -d 
 test_folder/ (13.01 mb) 
 
 ├── another_folder/ (1.0 mb) 

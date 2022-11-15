@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # pytree module
 
 # code destined to simulating 'tree'
@@ -190,10 +188,10 @@ def get_adjusted_file_size_string(file_size_in_bytes: int) -> str:
     return adjusted_size_string
 
 
-def get_file_size_in_bytes(file_path: Path or str) -> int:
+def get_file_size_in_bytes(file_path: Path) -> int:
     """
     Given a path to a file, returns file disk size in bytes.
-    :param file_path: Path or String. Represents a path to a file.
+    :param file_path: Path. Represents a path to a file.
     :return: Integer. Represents file disk size in bytes.
     """
     # getting file size
@@ -203,10 +201,10 @@ def get_file_size_in_bytes(file_path: Path or str) -> int:
     return file_size
 
 
-def get_folder_size_in_bytes(path_to_folder: Path or str) -> int:
+def get_folder_size_in_bytes(path_to_folder: Path) -> int:
     """
     Given a path to a folder, returns folder disk size in bytes.
-    :param path_to_folder: Path or String. Represents a path to a folder.
+    :param path_to_folder: Path. Represents a path to a folder.
     :return: Integer. Represents folder disk size in bytes.
     """
     # defining placeholder variable for full dir size
@@ -224,8 +222,11 @@ def get_folder_size_in_bytes(path_to_folder: Path or str) -> int:
             # getting file path
             file_path = join(root, file)
 
+            # getting absolute file path
+            file_abs_path = get_absolute_path(path_to_file_or_folder=file_path)
+
             # getting file size
-            file_size = get_file_size_in_bytes(file_path=file_path)
+            file_size = get_file_size_in_bytes(file_path=file_abs_path)
 
             # adding file size to dir size
             full_dir_size += file_size
@@ -400,8 +401,11 @@ def pytree(start_path: str = '.',
     # adding full size
     if include_sizes:
 
+        # getting start path absolute path
+        start_abs_path = get_absolute_path(path_to_file_or_folder=start_path)
+
         # getting folder size in bytes
-        full_size = get_folder_size_in_bytes(path_to_folder=start_path)
+        full_size = get_folder_size_in_bytes(path_to_folder=start_abs_path)
 
         # getting adjusted folder size string
         adjusted_full_size = get_adjusted_file_size_string(file_size_in_bytes=full_size)
