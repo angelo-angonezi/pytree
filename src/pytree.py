@@ -190,10 +190,10 @@ def get_adjusted_file_size_string(file_size_in_bytes: int) -> str:
     return adjusted_size_string
 
 
-def get_file_size_in_bytes(file_path: str) -> int:
+def get_file_size_in_bytes(file_path: Path or str) -> int:
     """
     Given a path to a file, returns file disk size in bytes.
-    :param file_path: String. Represents a path to a file.
+    :param file_path: Path or String. Represents a path to a file.
     :return: Integer. Represents file disk size in bytes.
     """
     # getting file size
@@ -203,13 +203,16 @@ def get_file_size_in_bytes(file_path: str) -> int:
     return file_size
 
 
-def get_folder_size_in_bytes(path_to_folder: str) -> int:
+def get_folder_size_in_bytes(path_to_folder: Path or str) -> int:
     """
     Given a path to a folder, returns folder disk size in bytes.
-    :param path_to_folder: String. Represents a path to a folder.
+    :param path_to_folder: Path or String. Represents a path to a folder.
     :return: Integer. Represents folder disk size in bytes.
     """
+    # defining placeholder variable for full dir size
     full_dir_size = 0
+
+    # getting files and dirs in start folder
     everything_in_folder = walk(path_to_folder)
 
     # iterating over dirs
@@ -219,8 +222,7 @@ def get_folder_size_in_bytes(path_to_folder: str) -> int:
         for file in files:
 
             # getting file path
-            file_path = join(root,
-                             file)
+            file_path = join(root, file)
 
             # getting file size
             file_size = get_file_size_in_bytes(file_path=file_path)
@@ -232,7 +234,7 @@ def get_folder_size_in_bytes(path_to_folder: str) -> int:
     return full_dir_size
 
 
-def get_number_of_files_inside_folder(path_to_folder: str) -> int:
+def get_number_of_files_inside_folder(path_to_folder: Path) -> int:
     """
     Given a path to a folder, returns number of files or folders inside given folder.
     :param path_to_folder: String. Represents a path to a folder.
@@ -241,7 +243,7 @@ def get_number_of_files_inside_folder(path_to_folder: str) -> int:
     # getting all files and folders inside given folder
     all_files_and_folders_inside_folder = listdir(path_to_folder)
 
-    # getting files' count
+    # getting files/folders count
     file_and_folder_count = len(all_files_and_folders_inside_folder)
 
     # returning count
@@ -279,7 +281,11 @@ def pytree(start_path: str = '.',
 
     # iterating over dirs and files
     for root, _, files in all_files_and_folders:
+
+        # getting path root
         p_root = Path(root)
+
+        # setting parent id
         if first:
             parent_id = None
             first = False
@@ -312,8 +318,14 @@ def pytree(start_path: str = '.',
 
         # adding dir size to name
         if include_sizes:
+
+            # getting dir size
             dir_size_in_bytes = get_folder_size_in_bytes(path_to_folder=abs_path)
+
+            # getting adjusted dir size str
             adjusted_dir_size = get_adjusted_file_size_string(file_size_in_bytes=dir_size_in_bytes)
+
+            # appending dir size to colored string
             colored_text_string += f' ({adjusted_dir_size})'
 
         # creating folder node
@@ -333,18 +345,29 @@ def pytree(start_path: str = '.',
 
             # checking if user has passed specific extension
             if specific_extension is not None:
+
                 # checking if current file is of specified extension
                 if not file.endswith(specific_extension):
+
+                    # skipping to next file
                     continue
 
             # adding file size to name
             if include_sizes:
+
+                # getting file size
                 file_size_in_bytes = get_file_size_in_bytes(file_path=f_id)
+
+                # getting adjusted file size str
                 adjusted_file_size = get_adjusted_file_size_string(file_size_in_bytes=file_size_in_bytes)
+
+                # appending file size to file name
                 file_name += f' ({adjusted_file_size})'
 
             # creating file node
             if include_files:
+
+                # creating tree node from file
                 tree.create_node(tag=file_name,
                                  identifier=f_id,
                                  parent=p_root_id)
@@ -381,11 +404,19 @@ def pytree(start_path: str = '.',
 
     # checking if tree is empty
     if size == 0:
+
         # printing invalid input message
-        print('Invalid input. Must be a directory.\nPlease check input and try again.')
+        f_string = 'Invalid input. Must be a directory.\n'
+        f_string += 'Please check input and try again.'
+        print(f_string)
+
+    # if tree is not empty
     else:
+
         # displaying tree
         print(tree)
+
+        # printing folder summary
         print(dirs_and_files_string)
 
 ######################################################################
@@ -402,7 +433,11 @@ def main():
 
     # checking if user has passed specific folder
     start_path = args_dict['start_path'][0]
+
+    # if user has not passed specific folder
     if start_path is None:
+
+        # getting default start path (".")
         start_path = DEFAULT_START_PATH
 
     # checking whether tree should contain only dirs or also the files
@@ -418,8 +453,11 @@ def main():
     specific_extension_param = args_dict['specified_extension']
 
     # checking debug toggle
+
+    # if debug toggle is on
     if DEBUG:
-        # getting debug tree
+
+        # getting debug tree from default parameters
         pytree(start_path=DEBUG_FOLDER,
                include_files=True,
                include_sizes=True,
@@ -427,8 +465,10 @@ def main():
                specific_extension='.txt',
                force_absolute_ids=False)
 
+    # if debug toggle is off
     else:
-        # getting tree
+
+        # getting tree based on parsed parameters
         pytree(start_path=start_path,
                include_files=include_files_param,
                include_sizes=include_sizes_param,
