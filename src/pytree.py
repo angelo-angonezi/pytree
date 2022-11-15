@@ -1,24 +1,31 @@
 #!/usr/bin/python3
 
 # pytree module
-# Code destined to simulating 'tree' command from Linux, but running on python
+
+# code destined to simulating 'tree'
+# command from Linux, running on python.
 
 ######################################################################
 # imports
 
-import os
-import argparse
+# importing required libraries
+from os import walk
+from os import listdir
+from os.path import join
 from treelib import Tree
 from pathlib import Path
+from os.path import getsize
+from argparse import ArgumentParser
 
 #####################################################################
-# toggle debug
+# debug toggle
 
-DEBUG = False
+DEBUG = True
 
 #####################################################################
-# defining default values
-DEBUG_FOLDER = os.path.join('..', 'test_folder')
+# defining default values and global parameters
+
+DEBUG_FOLDER = join('..', 'test_folder')
 DEFAULT_START_PATH = '.'
 ONE_BYTE = 1
 ONE_KB = 1024 * ONE_BYTE
@@ -35,10 +42,10 @@ def get_args_dict() -> dict:
     :return: Dictionary. Represents the parsed arguments.
     """
     # defining program description
-    description = "pytree - a simpler 'tree' command running in python\n"
+    description = "pytree - a simpler 'tree' command running in python"
 
     # creating a parser instance
-    parser = argparse.ArgumentParser(description=description)
+    parser = ArgumentParser(description=description)
 
     # adding arguments to parser
     parser.add_argument('start_path', nargs='*',
@@ -77,18 +84,23 @@ def get_args_dict() -> dict:
     # returning the arguments dictionary
     return args_dict
 
-
 ######################################################################
 # defining auxiliary functions
 
-def get_absolute_path(path_to_file_or_folder: str) -> str:
+
+def get_absolute_path(path_to_file_or_folder: str) -> Path:
     """
     Given a path to a file or folder, returns its absolute path.
     :param path_to_file_or_folder: String. Represents partial path.
     :return: String. Represents absolute system path.
     """
+    # getting partial path
     partial_path = Path(path_to_file_or_folder)
+
+    # getting absolute path
     absolute_path = partial_path.absolute()
+
+    # returning absolute path
     return absolute_path
 
 
@@ -98,7 +110,10 @@ def from_bytes_to_kilobytes(value_in_bytes: int) -> float:
     :param value_in_bytes: Integer. Represents file size value in bytes.
     :return: Float. Represents size value in kilobytes.
     """
+    # getting value in kilobytes
     value_in_kilobytes = value_in_bytes / ONE_KB
+
+    # returning value in kilobytes
     return value_in_kilobytes
 
 
@@ -108,7 +123,10 @@ def from_bytes_to_megabytes(value_in_bytes: int) -> float:
     :param value_in_bytes: Integer. Represents file size value in bytes.
     :return: Float. Represents size value in megabytes.
     """
+    # getting value in megabytes
     value_in_megabytes = value_in_bytes / ONE_MB
+
+    # returning value in megabytes
     return value_in_megabytes
 
 
@@ -118,7 +136,10 @@ def from_bytes_to_gigabytes(value_in_bytes: int) -> float:
     :param value_in_bytes: Integer. Represents file size value in bytes.
     :return: Float. Represents size value in gigabytes.
     """
+    # getting value in gigabytes
     value_in_gigabytes = value_in_bytes / ONE_GB
+
+    # returning value in gigabytes
     return value_in_gigabytes
 
 
@@ -160,7 +181,11 @@ def get_file_size_in_bytes(file_path: str) -> int:
     :param file_path: String. Represents a path to a file.
     :return: Integer. Represents file disk size in bytes.
     """
-    return os.path.getsize(file_path)
+    # getting file size
+    file_size = getsize(file_path)
+
+    # returning file size
+    return file_size
 
 
 def get_folder_size_in_bytes(path_to_folder: str) -> int:
@@ -170,15 +195,25 @@ def get_folder_size_in_bytes(path_to_folder: str) -> int:
     :return: Integer. Represents folder disk size in bytes.
     """
     full_dir_size = 0
-    everything_in_folder = os.walk(path_to_folder)
+    everything_in_folder = walk(path_to_folder)
 
-    # iterating over dirs and files
+    # iterating over dirs
     for root, _, files in everything_in_folder:
+
+        # iterating over files
         for file in files:
-            file_path = os.path.join(root, file)
+
+            # getting file path
+            file_path = join(root,
+                             file)
+
+            # getting file size
             file_size = get_file_size_in_bytes(file_path=file_path)
+
+            # adding file size to dir size
             full_dir_size += file_size
 
+    # returning full dir size
     return full_dir_size
 
 
@@ -189,8 +224,12 @@ def get_number_of_files_inside_folder(path_to_folder: str) -> int:
     :return: Integer. Represents number of files or folders inside given folder.
     """
     # getting all files and folders inside given folder
-    all_files_and_folders_inside_folder = os.listdir(path_to_folder)
+    all_files_and_folders_inside_folder = listdir(path_to_folder)
+
+    # getting files' count
     file_and_folder_count = len(all_files_and_folders_inside_folder)
+
+    # returning count
     return file_and_folder_count
 
 
@@ -217,12 +256,11 @@ def pytree(start_path: str = '.',
     first = True
 
     # getting dirs and files
-    all_files_and_folders = os.walk(start_path)
+    all_files_and_folders = walk(start_path)
 
     # starting dirs, files and size count
     total_dirs_num = 0
     total_files_num = 0
-    total_disk_size = 0
 
     # iterating over dirs and files
     for root, _, files in all_files_and_folders:
@@ -273,6 +311,7 @@ def pytree(start_path: str = '.',
 
         # iterating over files
         for file in files:
+
             # getting file name
             f_id = p_root_id / file
             file_name = f_id.name
@@ -339,6 +378,10 @@ def pytree(start_path: str = '.',
 
 
 def main():
+    """
+    Runs main code.
+    :return: None.
+    """
     # getting args dict
     args_dict = get_args_dict()
 
