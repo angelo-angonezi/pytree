@@ -84,7 +84,7 @@ def get_args_dict() -> dict:
                         dest='level',
                         required=False,
                         type=int or None,
-                        help='',
+                        help=level_help,
                         default=-1)
 
     # creating arguments dictionary

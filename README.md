@@ -1,34 +1,41 @@
 # pytree
 A simpler 'tree' linux command, running on Python.
 
-Contains flags for displaying file and folder sizes (-s),
-hiding files, showing only directories (-d),
-get file count inside folder (-c) and search for specific file
-extension (-x)
+Contains flags for displaying file and folder sizes (-s);
+hiding files, showing only directories (-d);
+get file count inside folder (-c); search for specific file
+extension (-x); and subfolder level (-l).
 
 Requirements:
 - python3;
-- treelib module.
+- treelib package (https://pypi.org/project/treelib/ or https://anaconda.org/conda-forge/treelib).
 
 Installation:
 1. Clone this repository
 2. Run code via command "python /path_to_install/src/pytree.py"
 3. (optional) Add previous command to path or as an alias in bash_aliases file - so that "pytree" command is available globally
 
+--
 Usage:
 
-pytree.py [-h] [-d] [-s] [start_path [start_path ...]]
+pytree.py [-h] [-d] [-s] [-c] [-x SPECIFIED_EXTENSION] [-l LEVEL] [start_path [start_path ...]]
 
-pytree - improved 'tree' command running in python
+pytree - a simpler 'tree' command running in python
 
 positional arguments:
-start_path        defines path to directory to start building the tree
+  start_path            defines path to directory to start building the tree
 
 optional arguments:
--h, --help        show this help message and exit 
--d, --dirs-only   tree displays directories only, and does not show files inside folders
--s, --show-sizes  tree displays files and folder sizes, in mega or gigabytes
+  -h, --help            show this help message and exit
+  -d, --dirs-only       tree displays directories only, and does not show files inside folders
+  -s, --show-sizes      tree displays files and folder sizes, in mega or gigabytes
+  -c, --show-counts     tree displays the number of files or folders inside each directory
+  -x SPECIFIED_EXTENSION, --extension SPECIFIED_EXTENSION
+                        tree will include only files that match given extension (e.g. ".txt", ".pdf")
+  -l LEVEL, --level LEVEL
+                        defines depth level of recursion (until which subfolder tree will be created)[0=current, -1=all]
 
+--
 Examples:
 
 $ python pytree.py test_folder/
