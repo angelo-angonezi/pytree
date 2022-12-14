@@ -7,6 +7,7 @@
 # imports
 
 # importing required libraries
+from os import sep  # gets current OS directory separator
 from os import walk
 from os import listdir
 from os.path import join
@@ -74,8 +75,17 @@ def get_args_dict() -> dict:
                         dest='specified_extension',
                         required=False,
                         type=str or None,
-                        help="tree will include only files that match given extension (e.g. '.txt', '.pdf')",
+                        help='tree will include only files that match given extension (e.g. ".txt", ".pdf")',
                         default=None)
+
+    level_help = 'defines depth level of recursion (until which subfolder tree will be created)'
+    level_help += '[0=current, -1=all]'
+    parser.add_argument('-l', '--level',
+                        dest='level',
+                        required=False,
+                        type=int or None,
+                        help='',
+                        default=-1)
 
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
@@ -257,6 +267,7 @@ def pytree(start_path: str = '.',
            include_sizes: bool = False,
            include_counts: bool = False,
            specific_extension: str or None = None,
+           subfolder_level: int = 1,
            force_absolute_ids: bool = True
            ) -> None:
     """
@@ -268,6 +279,7 @@ def pytree(start_path: str = '.',
     :param include_sizes: Boolean. Indicates whether tree should display file and folder sizes, in megabytes.
     :param include_counts: Boolean. Indicates whether tree should display file and folder counts.
     :param specific_extension: String. Represents a specific file extension to be searched.
+    :param subfolder_level: Integer. Represents subfolder depth to be used when creating tree.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
     be relative if start_path is relative, and absolute otherwise.
     """
@@ -289,6 +301,21 @@ def pytree(start_path: str = '.',
 
         # getting path root
         p_root = Path(root)
+
+        # converting path root to string
+        p_root_str = str(p_root)
+
+        # getting current file/dir level (counting OS separator occurrences)
+        current_level = p_root_str.count(sep)
+
+        # checking if desired subfolder level is not -1 (all subfolders)
+        if subfolder_level != -1:
+
+            # checking if current level is higher than defined subfolder level
+            if current_level > subfolder_level:
+
+                # skipping current file/dir
+                continue
 
         # setting parent id
         if first:
@@ -468,6 +495,9 @@ def main():
     # checking if user has passed specific extension to be looked for
     specific_extension_param = args_dict['specified_extension']
 
+    # getting subfolder level
+    level = args_dict['level']
+
     # checking debug toggle
 
     # if debug toggle is on
@@ -479,6 +509,7 @@ def main():
                include_sizes=True,
                include_counts=True,
                specific_extension='.txt',
+               subfolder_level=1,
                force_absolute_ids=False)
 
     # if debug toggle is off
@@ -490,6 +521,7 @@ def main():
                include_sizes=include_sizes_param,
                include_counts=include_counts_param,
                specific_extension=specific_extension_param,
+               subfolder_level=level,
                force_absolute_ids=False)
 
 ######################################################################
