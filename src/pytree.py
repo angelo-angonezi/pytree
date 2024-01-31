@@ -20,6 +20,7 @@ from argparse import ArgumentParser
 # debug toggle
 
 DEBUG = False
+CACHE_STR = '__pycache__'  # defines marker for cache folders (will be skipped)
 
 #####################################################################
 # defining default values and global parameters
@@ -230,6 +231,12 @@ def get_folder_size_in_bytes(path_to_folder: Path) -> int:
         # iterating over files
         for file in files:
 
+            # checking if file is cache-related
+            if CACHE_STR in root:
+
+                # skipping file
+                continue
+
             # getting file path
             file_path = join(root, file)
 
@@ -299,6 +306,12 @@ def pytree(start_path: str = '.',
     # iterating over dirs and files
     for root, _, files in all_files_and_folders:
 
+        # checking if file is cache-related
+        if CACHE_STR in root:
+
+            # skipping file
+            continue
+
         # getting path root
         p_root = Path(root)
 
@@ -339,7 +352,7 @@ def pytree(start_path: str = '.',
         colored_text_string = f"\033[0;34;42m{dir_name}"
 
         # recoloring to white so that it doesn't affect other nodes
-        colored_text_string += f"\033[0;37;40m"
+        colored_text_string += f"\033[0;37;48m"
 
         # getting number of files and folders inside directory
         current_dir_file_and_folder_count = get_number_of_files_inside_folder(path_to_folder=abs_path)
