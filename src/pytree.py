@@ -328,6 +328,10 @@ def pytree(start_path: str = '.',
     total_dirs_num = 0
     total_files_num = 0
 
+    # printing execution message
+    f_string = f'reading data...'
+    flush_string(string=f_string)
+
     # iterating over dirs and files
     for root, _, files in all_files_and_folders:
 
