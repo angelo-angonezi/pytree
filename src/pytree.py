@@ -7,8 +7,9 @@
 # imports
 
 # importing required libraries
-from os import sep  # gets current OS directory separator
+from os import sep
 from os import walk
+from sys import stdout
 from os import listdir
 from os.path import join
 from treelib import Tree
@@ -96,6 +97,30 @@ def get_args_dict() -> dict:
 
 ######################################################################
 # defining auxiliary functions
+
+
+def flush_string(string: str) -> None:
+    """
+    Given a string, writes and flushes it in the console using
+    sys library, and resets cursor to the start of the line.
+    (writes N backspaces at the end of line, where N = len(string)).
+    :param string: String. Represents a message to be written in the console.
+    :return: None.
+    """
+    # getting string length
+    string_len = len(string)
+
+    # creating backspace line
+    backspace_line = '\b' * string_len
+
+    # writing string
+    stdout.write(string)
+
+    # flushing console
+    stdout.flush()
+
+    # resetting cursor to start of the line
+    stdout.write(backspace_line)
 
 
 def get_absolute_path(path_to_file_or_folder: str) -> Path:
@@ -384,6 +409,10 @@ def pytree(start_path: str = '.',
         # iterating over files
         for file in files:
 
+            # printing execution message
+            f_string = f'reading data... | files: {total_files_num} | folders: {total_dirs_num}'
+            flush_string(string=f_string)
+
             # getting file id
             f_id = p_root_id / file
 
@@ -468,6 +497,11 @@ def pytree(start_path: str = '.',
 
     # if tree is not empty
     else:
+
+        # adding spacer
+        f_string = 'showing tree...'
+        f_string += ' ' * 50
+        print(f_string)
 
         # displaying tree
         print(tree)
