@@ -77,7 +77,7 @@ def get_args_dict() -> dict:
                         dest='verbose',
                         action='store_true',
                         help='shows progress message while reading files/folders data',
-                        default=True)
+                        default=False)
 
     parser.add_argument('-x', '--extension',
                         dest='specified_extension',
