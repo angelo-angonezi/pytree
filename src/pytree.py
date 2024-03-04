@@ -73,6 +73,12 @@ def get_args_dict() -> dict:
                         help='tree displays the number of files or folders inside each directory',
                         default=False)
 
+    parser.add_argument('-v', '--verbose',
+                        dest='verbose',
+                        action='store_true',
+                        help='shows progress message while reading files/folders data',
+                        default=True)
+
     parser.add_argument('-x', '--extension',
                         dest='specified_extension',
                         required=False,
@@ -121,6 +127,23 @@ def flush_string(string: str) -> None:
 
     # resetting cursor to start of the line
     stdout.write(backspace_line)
+
+
+def print_progress_message(base_string: str,
+                           conditional: bool
+                           ) -> None:
+    """
+    Checks whether given conditional is
+    True, and prints given string if so.
+    :param base_string: String. Represents a progress message.
+    :param conditional: Boolean. Represents a conditional to be checked.
+    :return: None.
+    """
+    # checking conditional
+    if conditional:
+
+        # printing message
+        flush_string(string=base_string)
 
 
 def get_absolute_path(path_to_file_or_folder: str) -> Path:
@@ -298,6 +321,7 @@ def pytree(start_path: str = '.',
            include_files: bool = True,
            include_sizes: bool = False,
            include_counts: bool = False,
+           verbose: bool = True,
            specific_extension: str or None = None,
            subfolder_level: int = 1,
            force_absolute_ids: bool = True
@@ -310,6 +334,7 @@ def pytree(start_path: str = '.',
     :param include_files: Boolean. Indicates whether to also include the files in the tree.
     :param include_sizes: Boolean. Indicates whether tree should display file and folder sizes, in megabytes.
     :param include_counts: Boolean. Indicates whether tree should display file and folder counts.
+    :param verbose: Boolean. Indicates whether tree should display progress message while reading.
     :param specific_extension: String. Represents a specific file extension to be searched.
     :param subfolder_level: Integer. Represents subfolder depth to be used when creating tree.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
@@ -330,7 +355,8 @@ def pytree(start_path: str = '.',
 
     # printing execution message
     f_string = f'reading data...'
-    flush_string(string=f_string)
+    print_progress_message(base_string=f_string,
+                           conditional=verbose)
 
     # iterating over dirs and files
     for root, _, files in all_files_and_folders:
@@ -415,7 +441,8 @@ def pytree(start_path: str = '.',
 
             # printing execution message
             f_string = f'reading data... | files: {total_files_num} | folders: {total_dirs_num}'
-            flush_string(string=f_string)
+            print_progress_message(base_string=f_string,
+                                   conditional=verbose)
 
             # getting file id
             f_id = p_root_id / file
@@ -505,7 +532,8 @@ def pytree(start_path: str = '.',
         # adding spacer
         f_string = 'showing tree...'
         f_string += ' ' * 50
-        print(f_string)
+        print_progress_message(base_string=f_string,
+                               conditional=verbose)
 
         # displaying tree
         print(tree)
@@ -543,6 +571,9 @@ def main():
     # checking whether tree should contain file and folder counts information
     include_counts_param = args_dict['show_counts_flag']
 
+    # checking whether display progress message while reading info
+    verbose = args_dict['verbose']
+
     # checking if user has passed specific extension to be looked for
     specific_extension_param = args_dict['specified_extension']
 
@@ -559,6 +590,7 @@ def main():
                include_files=True,
                include_sizes=True,
                include_counts=True,
+               verbose=True,
                specific_extension='.txt',
                subfolder_level=1,
                force_absolute_ids=False)
@@ -571,6 +603,7 @@ def main():
                include_files=include_files_param,
                include_sizes=include_sizes_param,
                include_counts=include_counts_param,
+               verbose=verbose,
                specific_extension=specific_extension_param,
                subfolder_level=level,
                force_absolute_ids=False)
