@@ -86,6 +86,13 @@ def get_args_dict() -> dict:
                         help='tree will include only files that match given extension (e.g. ".txt", ".pdf")',
                         default=None)
 
+    parser.add_argument('-k', '--keyword',
+                        dest='keyword',
+                        required=False,
+                        type=str or None,
+                        help='tree will include only files that contain specified keyword on file name',
+                        default=None)
+
     level_help = 'defines depth level of recursion (until which subfolder tree will be created)'
     level_help += '[0=current, -1=all]'
     parser.add_argument('-l', '--level',
@@ -323,6 +330,7 @@ def pytree(start_path: str = '.',
            include_counts: bool = False,
            verbose: bool = True,
            specific_extension: str or None = None,
+           keyword: str or None = None,
            subfolder_level: int = 1,
            force_absolute_ids: bool = True
            ) -> None:
@@ -336,6 +344,7 @@ def pytree(start_path: str = '.',
     :param include_counts: Boolean. Indicates whether tree should display file and folder counts.
     :param verbose: Boolean. Indicates whether tree should display progress message while reading.
     :param specific_extension: String. Represents a specific file extension to be searched.
+    :param keyword: String. Represents a specific keyword to be searched.
     :param subfolder_level: Integer. Represents subfolder depth to be used when creating tree.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
     be relative if start_path is relative, and absolute otherwise.
@@ -459,6 +468,15 @@ def pytree(start_path: str = '.',
                     # skipping to next file
                     continue
 
+            # checking if user has passed specific keyword
+            if keyword is not None:
+
+                # checking if current file is of specified keyword
+                if keyword not in file:
+
+                    # skipping to next file
+                    continue
+
             # adding file size to name
             if include_sizes:
 
@@ -577,6 +595,9 @@ def main():
     # checking if user has passed specific extension to be looked for
     specific_extension_param = args_dict['specified_extension']
 
+    # checking if user has passed specific keyword to be looked for
+    specific_keyword_param = args_dict['keyword']
+
     # getting subfolder level
     level = args_dict['level']
 
@@ -592,6 +613,7 @@ def main():
                include_counts=True,
                verbose=True,
                specific_extension='.txt',
+               keyword=False,
                subfolder_level=1,
                force_absolute_ids=False)
 
@@ -605,6 +627,7 @@ def main():
                include_counts=include_counts_param,
                verbose=verbose,
                specific_extension=specific_extension_param,
+               keyword=specific_keyword_param,
                subfolder_level=level,
                force_absolute_ids=False)
 
