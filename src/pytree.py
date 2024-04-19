@@ -559,6 +559,7 @@ def pytree(start_path: str = '.',
         # adding spacer
         f_string = 'showing tree...'
         f_string += ' ' * 50
+        f_string += '\n'
         print_progress_message(base_string=f_string,
                                conditional=verbose)
 
