@@ -362,6 +362,9 @@ def pytree(start_path: str = '.',
     total_dirs_num = 0
     total_files_num = 0
 
+    # defining placeholder value for scanned files num
+    scanned_files_num = 0
+
     # printing execution message
     f_string = f'reading data...'
     print_progress_message(base_string=f_string,
@@ -448,8 +451,14 @@ def pytree(start_path: str = '.',
         # iterating over files
         for file in files:
 
+            # updating scanned files num
+            scanned_files_num += 1
+
             # printing execution message
-            f_string = f'reading data... | files: {total_files_num} | folders: {total_dirs_num}'
+            f_string = f'reading data... '
+            f_string += f'| files: {total_files_num} '
+            f_string += f'| folders: {total_dirs_num} '
+            f_string += f'| scanned files: {scanned_files_num} '
             print_progress_message(base_string=f_string,
                                    conditional=verbose)
 
