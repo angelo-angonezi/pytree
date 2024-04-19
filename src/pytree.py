@@ -458,7 +458,7 @@ def pytree(start_path: str = '.',
             f_string = f'reading data... '
             f_string += f'| files: {total_files_num} '
             f_string += f'| folders: {total_dirs_num} '
-            f_string += f'| scanned files: {scanned_files_num} '
+            f_string += f'| scanned: {scanned_files_num} '
             print_progress_message(base_string=f_string,
                                    conditional=verbose)
 
