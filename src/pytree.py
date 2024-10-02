@@ -29,9 +29,10 @@ CACHE_STR = '__pycache__'  # defines marker for cache folders (will be skipped)
 DEBUG_FOLDER = join('.', 'test_folder')
 DEFAULT_START_PATH = '.'
 ONE_BYTE = 1
-ONE_KB = 1024 * ONE_BYTE
-ONE_MB = 1024 * ONE_KB
-ONE_GB = 1024 * ONE_MB
+MULTIPLIER = 1024
+ONE_KB = ONE_BYTE * MULTIPLIER
+ONE_MB = ONE_KB * MULTIPLIER
+ONE_GB = ONE_MB * MULTIPLIER
 
 #####################################################################
 # argument parsing related functions
@@ -101,6 +102,12 @@ def get_args_dict() -> dict:
                         type=int or None,
                         help=level_help,
                         default=-1)
+
+    parser.add_argument('-w', '--windows',
+                        dest='windows',
+                        action='store_true',
+                        help='disables folder strings recoloring (only works on Linux)',
+                        default=False)
 
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
@@ -332,7 +339,8 @@ def pytree(start_path: str = '.',
            specific_extension: str or None = None,
            keyword: str or None = None,
            subfolder_level: int = 1,
-           force_absolute_ids: bool = True
+           force_absolute_ids: bool = True,
+           windows: bool = False
            ) -> None:
     """
     Prints 'tree' of files and subfolders inside
@@ -348,6 +356,7 @@ def pytree(start_path: str = '.',
     :param subfolder_level: Integer. Represents subfolder depth to be used when creating tree.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
     be relative if start_path is relative, and absolute otherwise.
+    :param windows: Boolean. Indicates whether program is running on windows system.
     """
     # creating tree instance
     tree = Tree()
@@ -415,11 +424,17 @@ def pytree(start_path: str = '.',
         dir_name = (p_root.name if p_root.name != "" else ".")
         dir_name += '/'
 
-        # coloring dir string
-        colored_text_string = f"\033[0;34;42m{dir_name}"
+        # getting based text string
+        colored_text_string = f"{dir_name}"
 
-        # recoloring to white so that it doesn't affect other nodes
-        colored_text_string += f"\033[0;37;48m"
+        # checking whether to recolor string
+        if not windows:
+
+            # coloring dir string
+            colored_text_string = f"\033[0;34;42m{dir_name}"
+
+            # recoloring to white so that it doesn't affect other nodes
+            colored_text_string += f"\033[0;37;48m"
 
         # getting number of files and folders inside directory
         current_dir_file_and_folder_count = get_number_of_files_inside_folder(path_to_folder=abs_path)
@@ -611,6 +626,9 @@ def main():
     # getting subfolder level
     level = args_dict['level']
 
+    # checking whether to recolor folder strings
+    windows = args_dict['windows']
+
     # checking debug toggle
 
     # if debug toggle is on
@@ -625,7 +643,8 @@ def main():
                specific_extension='.txt',
                keyword=False,
                subfolder_level=1,
-               force_absolute_ids=False)
+               force_absolute_ids=False,
+               windows=False)
 
     # if debug toggle is off
     else:
@@ -639,7 +658,8 @@ def main():
                specific_extension=specific_extension_param,
                keyword=specific_keyword_param,
                subfolder_level=level,
-               force_absolute_ids=False)
+               force_absolute_ids=False,
+               windows=windows)
 
 ######################################################################
 # running main function
