@@ -11,6 +11,7 @@ from os import sep
 from os import walk
 from sys import stdout
 from os import listdir
+from sys import platform
 from os.path import join
 from treelib import Tree
 from pathlib import Path
@@ -26,6 +27,7 @@ CACHE_STR = '__pycache__'  # defines marker for cache folders (will be skipped)
 #####################################################################
 # defining default values and global parameters
 
+CURRENT_OS = platform
 DEBUG_FOLDER = join('.', 'test_folder')
 DEFAULT_START_PATH = '.'
 ONE_BYTE = 1
@@ -102,12 +104,6 @@ def get_args_dict() -> dict:
                         type=int or None,
                         help=level_help,
                         default=-1)
-
-    parser.add_argument('-w', '--windows',
-                        dest='windows',
-                        action='store_true',
-                        help='disables folder strings recoloring (only works on Linux)',
-                        default=False)
 
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
@@ -627,7 +623,7 @@ def main():
     level = args_dict['level']
 
     # checking whether to recolor folder strings
-    windows = args_dict['windows']
+    windows = CURRENT_OS.startswith('win')
 
     # checking debug toggle
 
