@@ -18,7 +18,7 @@ Installation:
 --
 Usage:
 
-pytree.py [-h] [-d] [-s] [-c] [-x SPECIFIED_EXTENSION] [-l LEVEL] [-w] [start_path [start_path ...]]
+pytree.py [-h] [-d] [-s] [-c] [-x SPECIFIED_EXTENSION] [-l LEVEL] [start_path [start_path ...]]
 
 pytree - a simpler 'tree' command running in python
 
@@ -35,7 +35,6 @@ optional arguments:
   -l LEVEL, --level LEVEL
                         defines depth level of recursion (until which subfolder tree will be
                         created)[0=current, -1=all]
-  -w, --windows         disables folder strings recoloring (only works on Linux)
 
 --
 Examples:
