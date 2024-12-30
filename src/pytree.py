@@ -35,6 +35,7 @@ MULTIPLIER = 1024
 ONE_KB = ONE_BYTE * MULTIPLIER
 ONE_MB = ONE_KB * MULTIPLIER
 ONE_GB = ONE_MB * MULTIPLIER
+ONE_TB = ONE_GB * MULTIPLIER
 
 #####################################################################
 # argument parsing related functions
@@ -211,6 +212,19 @@ def from_bytes_to_gigabytes(value_in_bytes: int) -> float:
     return value_in_gigabytes
 
 
+def from_bytes_to_terabytes(value_in_bytes: int) -> float:
+    """
+    Given a value in bytes, returns equivalent value in terabytes.
+    :param value_in_bytes: Integer. Represents file size value in bytes.
+    :return: Float. Represents size value in terabytes.
+    """
+    # getting value in gigabytes
+    value_in_gigabytes = value_in_bytes / ONE_TB
+
+    # returning value in gigabytes
+    return value_in_gigabytes
+
+
 def get_adjusted_file_size_string(file_size_in_bytes: int) -> str:
     """
     Given file disk size in bytes, returns string containing file size in
@@ -218,8 +232,18 @@ def get_adjusted_file_size_string(file_size_in_bytes: int) -> str:
     :param file_size_in_bytes: String. Represents a path to a file or folder.
     :return: String. Represents file disk size in bytes, megabytes, or gigabytes.
     """
+    # if file size is larger than a terabyte
+    if file_size_in_bytes >= ONE_TB:
+
+        # getting file size in terabytes
+        adjusted_file_size = from_bytes_to_terabytes(value_in_bytes=file_size_in_bytes)
+        adjusted_file_size = round(adjusted_file_size, 2)
+
+        # writing size string in gigabytes
+        adjusted_size_string = f'{adjusted_file_size} tb'
+
     # if file size is larger than a gigabyte
-    if file_size_in_bytes >= ONE_GB:
+    elif file_size_in_bytes >= ONE_GB:
 
         # getting file size in gigabytes
         adjusted_file_size = from_bytes_to_gigabytes(value_in_bytes=file_size_in_bytes)
