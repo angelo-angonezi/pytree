@@ -124,6 +124,7 @@ def get_args_dict() -> dict:
 ######################################################################
 # defining auxiliary functions
 
+
 def clear_console(windows: bool) -> None:
     """
     Clears console window, using the respective
@@ -707,6 +708,7 @@ def main():
             while True:
 
                 # clearing console
+                clear_console(windows=windows)
 
                 # getting tree based on parsed parameters
                 pytree(start_path=start_path,
