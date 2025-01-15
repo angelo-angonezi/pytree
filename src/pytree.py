@@ -125,24 +125,13 @@ def get_args_dict() -> dict:
 # defining auxiliary functions
 
 
-def clear_console(windows: bool) -> None:
+def clear_console() -> None:
     """
     Clears console window, using the respective
     OS clear command ('cls' for windows and 'clear' otherwise).
-    :param windows: Boolean. Indicates whether program is running on windows system.
     :return: None.
     """
-    # defining base clear command
-    clear_command = 'clear'
-
-    # checking if running on windows
-    if windows:
-
-        # updating clear command
-        clear_command = 'cls'
-
-    # running clear command
-    system(clear_command)
+    print('\n' * 50)
 
 
 def flush_string(string: str) -> None:
@@ -708,7 +697,7 @@ def main():
             while True:
 
                 # clearing console
-                clear_console(windows=windows)
+                clear_console()
 
                 # getting tree based on parsed parameters
                 pytree(start_path=start_path,
