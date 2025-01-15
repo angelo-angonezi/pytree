@@ -106,6 +106,14 @@ def get_args_dict() -> dict:
                         help=level_help,
                         default=-1)
 
+    loop_help = 'defines whether to run code in loop (useful for tracking transfer/generation progress)'
+    loop_help += '[overrides verbose to False]'
+    parser.add_argument('-p', '--loop',
+                        dest='loop',
+                        action='store_true',
+                        help=loop_help,
+                        default=False)
+
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
 
@@ -646,6 +654,9 @@ def main():
     # getting subfolder level
     level = args_dict['level']
 
+    # checking whether to loop code
+    loop = args_dict['loop']
+
     # checking whether to recolor folder strings
     windows = CURRENT_OS.startswith('win')
 
@@ -668,6 +679,24 @@ def main():
 
     # if debug toggle is off
     else:
+
+        # checking whether to run code in loop
+        if loop:
+
+            # starting endless loop
+            while True:
+
+                # getting tree based on parsed parameters
+                pytree(start_path=start_path,
+                       include_files=include_files_param,
+                       include_sizes=include_sizes_param,
+                       include_counts=include_counts_param,
+                       verbose=False,
+                       specific_extension=specific_extension_param,
+                       keyword=specific_keyword_param,
+                       subfolder_level=level,
+                       force_absolute_ids=False,
+                       windows=windows)
 
         # getting tree based on parsed parameters
         pytree(start_path=start_path,
