@@ -9,7 +9,6 @@
 # importing required libraries
 from os import sep
 from os import walk
-from os import system
 from sys import stdout
 from os import listdir
 from sys import platform
@@ -131,6 +130,8 @@ def clear_console() -> None:
     OS clear command ('cls' for windows and 'clear' otherwise).
     :return: None.
     """
+    from time import sleep
+    sleep(1)
     print('\n' * 50)
 
 
