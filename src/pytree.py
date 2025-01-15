@@ -9,6 +9,7 @@
 # importing required libraries
 from os import sep
 from os import walk
+from os import system
 from sys import stdout
 from os import listdir
 from sys import platform
@@ -122,6 +123,25 @@ def get_args_dict() -> dict:
 
 ######################################################################
 # defining auxiliary functions
+
+def clear_console(windows: bool) -> None:
+    """
+    Clears console window, using the respective
+    OS clear command ('cls' for windows and 'clear' otherwise).
+    :param windows: Boolean. Indicates whether program is running on windows system.
+    :return: None.
+    """
+    # defining base clear command
+    clear_command = 'clear'
+
+    # checking if running on windows
+    if windows:
+
+        # updating clear command
+        clear_command = 'cls'
+
+    # running clear command
+    system(clear_command)
 
 
 def flush_string(string: str) -> None:
@@ -685,6 +705,8 @@ def main():
 
             # starting endless loop
             while True:
+
+                # clearing console
 
                 # getting tree based on parsed parameters
                 pytree(start_path=start_path,
