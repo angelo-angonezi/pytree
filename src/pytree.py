@@ -131,7 +131,7 @@ def clear_console() -> None:
     :return: None.
     """
     from time import sleep
-    a = 1 / 24
+    a = 1 / 60
     sleep(a)
     print('\n' * 50)
 
