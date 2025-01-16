@@ -711,9 +711,6 @@ def main():
                 # clearing console
                 clear_console(windows=windows)
 
-                # sleeping
-                sleep(2)
-
                 # getting tree based on parsed parameters
                 pytree(start_path=start_path,
                        include_files=include_files_param,
@@ -725,6 +722,9 @@ def main():
                        subfolder_level=level,
                        force_absolute_ids=False,
                        windows=windows)
+
+                # sleeping
+                sleep(2)
 
         # getting tree based on parsed parameters
         pytree(start_path=start_path,
