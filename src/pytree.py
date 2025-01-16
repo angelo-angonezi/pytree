@@ -9,8 +9,10 @@
 # importing required libraries
 from os import sep
 from os import walk
+from os import system
 from sys import stdout
 from os import listdir
+from time import sleep
 from sys import platform
 from os.path import join
 from treelib import Tree
@@ -122,6 +124,26 @@ def get_args_dict() -> dict:
 
 ######################################################################
 # defining auxiliary functions
+
+
+def clear_console(windows: bool) -> None:
+    """
+    Clears console window, using the respective
+    OS clear command ('cls' for windows and 'clear' otherwise).
+    :param windows: Boolean. Indicates whether program is running on windows system.
+    :return: None.
+    """
+    # defining base clear command
+    clear_command = 'clear'
+
+    # checking if running on windows
+    if windows:
+
+        # updating clear command
+        clear_command = 'cls'
+
+    # running clear command
+    system(clear_command)
 
 
 def flush_string(string: str) -> None:
@@ -368,8 +390,7 @@ def pytree(start_path: str = '.',
            keyword: str or None = None,
            subfolder_level: int = 1,
            force_absolute_ids: bool = True,
-           windows: bool = False,
-           loop: bool = False
+           windows: bool = False
            ) -> None:
     """
     Prints 'tree' of files and subfolders inside
@@ -385,8 +406,7 @@ def pytree(start_path: str = '.',
     :param subfolder_level: Integer. Represents subfolder depth to be used when creating tree.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
     be relative if start_path is relative, and absolute otherwise.
-    :param windows: Boolean. Indicates whether program is running on Windows system.
-    :param loop: Boolean. Indicates whether program is being run in loop.
+    :param windows: Boolean. Indicates whether program is running on windows system.
     """
     # creating tree instance
     tree = Tree()
@@ -605,8 +625,6 @@ def pytree(start_path: str = '.',
         f_string = 'showing tree...'
         f_string += ' ' * 50
         f_string += '\n'
-        if loop:
-            f_string += '\n' * 50
         print_progress_message(base_string=f_string,
                                conditional=verbose)
 
@@ -679,8 +697,7 @@ def main():
                keyword=False,
                subfolder_level=1,
                force_absolute_ids=False,
-               windows=False,
-               loop=False)
+               windows=False)
 
     # if debug toggle is off
     else:
@@ -690,6 +707,12 @@ def main():
 
             # starting endless loop
             while True:
+
+                # clearing console
+                clear_console(windows=windows)
+
+                # sleeping
+                sleep(2)
 
                 # getting tree based on parsed parameters
                 pytree(start_path=start_path,
@@ -701,8 +724,7 @@ def main():
                        keyword=specific_keyword_param,
                        subfolder_level=level,
                        force_absolute_ids=False,
-                       windows=windows,
-                       loop=True)
+                       windows=windows)
 
         # getting tree based on parsed parameters
         pytree(start_path=start_path,
@@ -714,8 +736,7 @@ def main():
                keyword=specific_keyword_param,
                subfolder_level=level,
                force_absolute_ids=False,
-               windows=windows,
-               loop=False)
+               windows=windows)
 
 ######################################################################
 # running main function
