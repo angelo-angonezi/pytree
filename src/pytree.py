@@ -22,9 +22,9 @@ from src.utils.aux_funcs import get_number_of_files_inside_folder
 
 # importing global variables
 from src.utils.global_vars import DEBUG
-from src.utils.global_vars import CACHE_STR
 from src.utils.global_vars import CURRENT_OS
 from src.utils.global_vars import DEBUG_FOLDER
+from src.utils.global_vars import CACHE_FOLDERS
 from src.utils.global_vars import DEFAULT_START_PATH
 
 #####################################################################
@@ -169,8 +169,14 @@ def pytree(start_path: str = '.',
     # iterating over dirs and files
     for root, _, files in all_files_and_folders:
 
+        # getting cache bool list
+        cache_bool_list = [cache_str in root for cache_str in CACHE_FOLDERS]
+
+        # getting cache bool
+        cache_bool = any(cache_bool_list)
+
         # checking if file is cache-related
-        if CACHE_STR in root:
+        if cache_bool:
 
             # skipping file
             continue

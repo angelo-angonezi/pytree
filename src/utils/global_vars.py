@@ -22,7 +22,9 @@ ONE_KB = ONE_BYTE * MULTIPLIER
 ONE_MB = ONE_KB * MULTIPLIER
 ONE_GB = ONE_MB * MULTIPLIER
 ONE_TB = ONE_GB * MULTIPLIER
-CACHE_STR = '__pycache__'  # defines marker for cache folders (will be skipped)
+CACHE_FOLDERS = ['__pycache__',  # defines marker for cache folders (will be skipped)
+                 '.git',         # git related files
+                 '.idea']        # pycharm related files
 
 ######################################################################
 # end of current module
