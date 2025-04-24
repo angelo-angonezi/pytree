@@ -9,7 +9,6 @@
 # importing required libraries
 from os import sep
 from os import walk
-from time import sleep
 from treelib import Tree
 from pathlib import Path
 from argparse import ArgumentParser
@@ -47,7 +46,6 @@ def get_args_dict() -> dict:
     parser.add_argument('start_path',
                         nargs='*',
                         type=str,
-                        required=False,
                         help='defines path to directory to start building the tree',
                         default='.')
 
@@ -126,6 +124,7 @@ def pytree(start_path: str = '.',
            specific_extension: str or None = None,
            keyword: str or None = None,
            subfolder_level: int = 1,
+           no_recolor: bool = False,
            force_absolute_ids: bool = True,
            windows: bool = False
            ) -> None:
@@ -141,6 +140,7 @@ def pytree(start_path: str = '.',
     :param specific_extension: String. Represents a specific file extension to be searched.
     :param keyword: String. Represents a specific keyword to be searched.
     :param subfolder_level: Integer. Represents subfolder depth to be used when creating tree.
+    :param no_recolor: Boolean. Indicates whether to skip recoloring step done when running on linux.
     :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
     be relative if start_path is relative, and absolute otherwise.
     :param windows: Boolean. Indicates whether program is running on windows system.
@@ -214,8 +214,11 @@ def pytree(start_path: str = '.',
         # getting based text string
         colored_text_string = f"{dir_name}"
 
+        # getting recolor bool
+        recolor = (not windows) and (not no_recolor)
+
         # checking whether to recolor string
-        if not windows:
+        if recolor:
 
             # coloring dir string
             colored_text_string = f"\033[0;34;42m{dir_name}"
@@ -370,14 +373,6 @@ def pytree(start_path: str = '.',
 
         # displaying tree
         print(tree)
-        loop = True
-        if loop:
-            import ctypes
-            kernel32 = ctypes.windll.kernel32
-            kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
-            height = tree.size()
-            for i in range(height):
-                print('\033[F')
 
         # printing folder summary
         print(dirs_and_files_string)
@@ -424,8 +419,8 @@ def main():
     # getting subfolder level
     level = args_dict['level']
 
-    # checking whether to loop code
-    loop = args_dict['loop']
+    # getting no recolor toggle
+    no_recolor = args_dict['no_recolor']
 
     # checking whether to recolor folder strings
     windows = CURRENT_OS.startswith('win')
@@ -444,35 +439,12 @@ def main():
                specific_extension='.txt',
                keyword=False,
                subfolder_level=1,
+               no_recolor=True,
                force_absolute_ids=False,
                windows=False)
 
     # if debug toggle is off
     else:
-
-        # checking whether to run code in loop
-        if loop:
-
-            # starting endless loop
-            while True:
-
-                # clearing console
-                # clear_console(windows=windows)
-
-                # getting tree based on parsed parameters
-                pytree(start_path=start_path,
-                       include_files=include_files_param,
-                       include_sizes=include_sizes_param,
-                       include_counts=include_counts_param,
-                       verbose=False,
-                       specific_extension=specific_extension_param,
-                       keyword=specific_keyword_param,
-                       subfolder_level=level,
-                       force_absolute_ids=False,
-                       windows=windows)
-
-                # sleeping
-                sleep(1)
 
         # getting tree based on parsed parameters
         pytree(start_path=start_path,
@@ -483,6 +455,7 @@ def main():
                specific_extension=specific_extension_param,
                keyword=specific_keyword_param,
                subfolder_level=level,
+               no_recolor=no_recolor,
                force_absolute_ids=False,
                windows=windows)
 
