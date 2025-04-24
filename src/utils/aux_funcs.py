@@ -21,7 +21,7 @@ from src.utils.global_vars import ONE_KB
 from src.utils.global_vars import ONE_MB
 from src.utils.global_vars import ONE_GB
 from src.utils.global_vars import ONE_TB
-from src.utils.global_vars import CACHE_STR
+from src.utils.global_vars import CACHE_FOLDERS
 
 ######################################################################
 # defining auxiliary functions
