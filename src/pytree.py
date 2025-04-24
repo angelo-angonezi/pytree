@@ -13,31 +13,14 @@ from os import system
 from sys import stdout
 from os import listdir
 from time import sleep
-from sys import platform
-from os.path import join
 from treelib import Tree
 from pathlib import Path
 from os.path import getsize
+from os import get_terminal_size
 from argparse import ArgumentParser
 
-#####################################################################
-# debug toggle
-
-DEBUG = False
-CACHE_STR = '__pycache__'  # defines marker for cache folders (will be skipped)
-
-#####################################################################
-# defining default values and global parameters
-
-CURRENT_OS = platform
-DEBUG_FOLDER = join('.', 'test_folder')
-DEFAULT_START_PATH = '.'
-ONE_BYTE = 1
-MULTIPLIER = 1024
-ONE_KB = ONE_BYTE * MULTIPLIER
-ONE_MB = ONE_KB * MULTIPLIER
-ONE_GB = ONE_MB * MULTIPLIER
-ONE_TB = ONE_GB * MULTIPLIER
+# importing global variables
+from src.utils.global_vars import *
 
 #####################################################################
 # argument parsing related functions
@@ -58,29 +41,34 @@ def get_args_dict() -> dict:
     parser.add_argument('start_path',
                         nargs='*',
                         type=str,
+                        required=False,
                         help='defines path to directory to start building the tree',
                         default='.')
 
     parser.add_argument('-d', '--dirs-only',
                         dest='dirs_only_flag',
+                        required=False,
                         action='store_true',
                         help='tree displays directories only, and does not show files inside folders',
                         default=False)
 
     parser.add_argument('-s', '--show-sizes',
                         dest='show_sizes_flag',
+                        required=False,
                         action='store_true',
                         help='tree displays files and folder sizes, in mega or gigabytes',
                         default=False)
 
     parser.add_argument('-c', '--show-counts',
                         dest='show_counts_flag',
+                        required=False,
                         action='store_true',
                         help='tree displays the number of files or folders inside each directory',
                         default=False)
 
     parser.add_argument('-v', '--verbose',
                         dest='verbose',
+                        required=False,
                         action='store_true',
                         help='shows progress message while reading files/folders data',
                         default=False)
@@ -99,6 +87,12 @@ def get_args_dict() -> dict:
                         help='tree will include only files that contain specified keyword on file name',
                         default=None)
 
+    parser.add_argument('-nr', '--no-recolor',
+                        dest='no_recolor',
+                        action='store_true',
+                        help='disables tree recoloring performed when running on linux',
+                        default=False)
+
     level_help = 'defines depth level of recursion (until which subfolder tree will be created)'
     level_help += '[0=current, -1=all]'
     parser.add_argument('-l', '--level',
@@ -108,14 +102,6 @@ def get_args_dict() -> dict:
                         help=level_help,
                         default=-1)
 
-    loop_help = 'defines whether to run code in loop (useful for tracking transfer/generation progress)'
-    loop_help += '[overrides verbose to False]'
-    parser.add_argument('-p', '--loop',
-                        dest='loop',
-                        action='store_true',
-                        help=loop_help,
-                        default=False)
-
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
 
@@ -124,6 +110,16 @@ def get_args_dict() -> dict:
 
 ######################################################################
 # defining auxiliary functions
+
+def get_console_width() -> int:
+    """
+    Returns current console width.
+    """
+    # getting console dimensions
+    width, _ = get_terminal_size()
+
+    # returning console width
+    return width
 
 
 def clear_console(windows: bool) -> None:
@@ -621,15 +617,26 @@ def pytree(start_path: str = '.',
     # if tree is not empty
     else:
 
+        # getting console width
+        console_width = get_console_width()
+
         # adding spacer
         f_string = 'showing tree...'
-        f_string += ' ' * 50
+        f_string += ' ' * (console_width - 5)
         f_string += '\n'
         print_progress_message(base_string=f_string,
                                conditional=verbose)
 
         # displaying tree
         print(tree)
+        loop = True
+        if loop:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+            height = tree.size()
+            for i in range(height):
+                print('\033[F')
 
         # printing folder summary
         print(dirs_and_files_string)
@@ -709,7 +716,7 @@ def main():
             while True:
 
                 # clearing console
-                clear_console(windows=windows)
+                # clear_console(windows=windows)
 
                 # getting tree based on parsed parameters
                 pytree(start_path=start_path,
@@ -724,7 +731,7 @@ def main():
                        windows=windows)
 
                 # sleeping
-                sleep(2)
+                sleep(1)
 
         # getting tree based on parsed parameters
         pytree(start_path=start_path,
