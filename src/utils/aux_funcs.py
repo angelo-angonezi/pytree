@@ -255,8 +255,14 @@ def get_folder_size_in_bytes(path_to_folder: Path) -> int:
         # iterating over files
         for file in files:
 
+            # getting cache bool list
+            cache_bool_list = [cache_str in root for cache_str in CACHE_FOLDERS]
+
+            # getting cache bool
+            cache_bool = any(cache_bool_list)
+
             # checking if file is cache-related
-            if CACHE_STR in root:
+            if cache_bool:
 
                 # skipping file
                 continue
