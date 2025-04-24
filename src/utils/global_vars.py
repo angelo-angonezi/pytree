@@ -12,8 +12,8 @@ from os.path import join
 ######################################################################
 # defining global variables
 
-UPDATE_TIME = 0.1
 CURRENT_OS = platform
+DEBUG = False
 DEBUG_FOLDER = join('.', 'test_folder')
 DEFAULT_START_PATH = '.'
 ONE_BYTE = 1
