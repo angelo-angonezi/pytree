@@ -15,7 +15,6 @@ from os.path import join
 from pathlib import Path
 from os.path import getsize
 from os import get_terminal_size
-# TODO: sort relative path execution and from src.utils imports
 
 # importing global variables
 from src.utils.global_vars import ONE_KB
