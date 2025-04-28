@@ -6,6 +6,10 @@
 ######################################################################
 # imports
 
+# adding project to path
+from sys import path
+path.append('C:\\pycharm_projects\\pytree')
+
 # importing required libraries
 from os import sep
 from os import walk
