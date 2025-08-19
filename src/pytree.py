@@ -13,9 +13,6 @@ from treelib import Tree
 from pathlib import Path
 from argparse import ArgumentParser
 from src.utils.global_vars import CACHE_FOLDERS
-from src.utils.aux_funcs import get_console_width
-from src.utils.aux_funcs import get_absolute_path
-from src.utils.aux_funcs import print_progress_message
 from src.utils.aux_funcs import get_file_size_in_bytes
 from src.classes.ProgressTracker import ProgressTracker
 from src.utils.aux_funcs import get_folder_size_in_bytes
@@ -73,7 +70,7 @@ def get_args_dict() -> dict:
                         default=False)
 
     parser.add_argument('-x', '--extension',
-                        dest='specified_extension',
+                        dest='specific_extension',
                         required=False,
                         type=str or None,
                         help='tree will include only files that match given extension (e.g. ".txt", ".pdf")',
@@ -83,22 +80,14 @@ def get_args_dict() -> dict:
                         dest='keyword',
                         required=False,
                         type=str or None,
-                        help='tree will include only files that contain specified keyword on file name',
+                        help='tree will include only files that contain specific keyword on file name',
                         default=None)
 
-    parser.add_argument('-nr', '--no-recolor',
-                        dest='no_recolor',
-                        action='store_true',
-                        help='disables tree recoloring performed when running on linux',
-                        default=False)
-
-    level_help = 'defines depth level of recursion (until which subfolder tree will be created)'
-    level_help += '[0=current, -1=all]'
     parser.add_argument('-l', '--level',
                         dest='level',
                         required=False,
                         type=int or None,
-                        help=level_help,
+                        help="defines tree's depth (until which subfolder tree will be created) [0=current, -1=all]",
                         default=-1)
 
     # creating arguments dictionary
@@ -112,9 +101,9 @@ def get_args_dict() -> dict:
 
 
 def get_tree(start_path: str,
-             include_files: bool = True,
-             include_sizes: bool = False,
-             include_counts: bool = False,
+             include_files: bool,
+             include_counts: bool,
+             include_sizes: bool,
              specific_extension: str or None = None,
              keyword: str or None = None,
              subfolder_level: int = 1,
@@ -235,7 +224,7 @@ def get_tree(start_path: str,
             # checking if user has passed specific extension
             if specific_extension is not None:
 
-                # checking if current file is of specified extension
+                # checking if current file is of specific extension
                 if not file.endswith(specific_extension):
 
                     # skipping to next file
@@ -244,7 +233,7 @@ def get_tree(start_path: str,
             # checking if user has passed specific keyword
             if keyword is not None:
 
-                # checking if current file is of specified keyword
+                # checking if current file contains specific keyword
                 if keyword not in file:
 
                     # skipping to next file
@@ -262,6 +251,9 @@ def get_tree(start_path: str,
                 # appending file size to file name
                 file_name += f' ({adjusted_file_size})'
 
+                # updating progress tracker attributes
+                progress_tracker.total_size += file_size_in_bytes
+
             # creating file node
             if include_files:
 
@@ -270,38 +262,50 @@ def get_tree(start_path: str,
                                  identifier=f_id,
                                  parent=root_path)
 
-                # updating progress tracker attributes
-                progress_tracker.files_num += 1
+            # updating progress tracker attributes
+            progress_tracker.files_num += 1
 
     # returning tree
     return tree
 
 
-def pytree(start_path: str = '.',
-           include_files: bool = True,
-           include_sizes: bool = False,
-           include_counts: bool = False,
-           verbose: bool = True,
+def pytree(start_path: str,
+           include_files: bool,
+           include_sizes: bool,
+           include_counts: bool,
+           verbose: bool,
            specific_extension: str or None = None,
            keyword: str or None = None,
            subfolder_level: int = 1,
-           no_recolor: bool = False,
-           force_absolute_ids: bool = True,
-           windows: bool = False,
            progress_tracker: ProgressTracker = ProgressTracker
            ) -> None:
     """
+    # TODO: update docstring.
     Docstring.
     """
-    # updating verbose toggle
+    # updating progress tracker toggles
+    progress_tracker.include_files = include_files
+    progress_tracker.include_sizes = include_sizes
+    progress_tracker.include_counts = include_counts
     progress_tracker.verbose = verbose
 
     # getting current tree
-    current_tree = get_tree()
+    # TODO: convert this all to a single class!
+    current_tree = get_tree(start_path=start_path,
+                            include_files=include_files,
+                            include_counts=include_counts,
+                            include_sizes=include_sizes,
+                            specific_extension=specific_extension,
+                            keyword=keyword,
+                            subfolder_level=subfolder_level,
+                            progress_tracker=progress_tracker)
+
+    # updating progress tracker tree
+    progress_tracker.tree = current_tree
 
 
 def parse_and_run(args_dict: dict,
-                  progress_tracker: ModuleProgressTracker
+                  progress_tracker: ProgressTracker
                   ) -> None:
     """
     Extracts args from args_dict
@@ -310,35 +314,26 @@ def parse_and_run(args_dict: dict,
     # checking if user has passed specific folder
     start_path = args_dict['start_path'][0]
 
-    # if user has not passed specific folder
-    if start_path is None:
-
-        # getting default start path
-        start_path = DEFAULT_START_PATH
-
     # checking whether tree should contain only dirs or also the files
     include_files_param = not (args_dict['dirs_only_flag'])
 
-    # checking whether tree should contain file and folder size information
-    include_sizes_param = args_dict['show_sizes_flag']
-
     # checking whether tree should contain file and folder counts information
     include_counts_param = args_dict['show_counts_flag']
+
+    # checking whether tree should contain file and folder size information
+    include_sizes_param = args_dict['show_sizes_flag']
 
     # checking whether display progress message while reading info
     verbose = args_dict['verbose']
 
     # checking if user has passed specific extension to be looked for
-    specific_extension_param = args_dict['specified_extension']
+    specific_extension = args_dict['specific_extension']
 
     # checking if user has passed specific keyword to be looked for
-    specific_keyword_param = args_dict['keyword']
+    keyword = args_dict['keyword']
 
     # getting subfolder level
     level = args_dict['level']
-
-    # getting no recolor toggle
-    no_recolor = args_dict['no_recolor']
 
     # running pytree function
     pytree(start_path=start_path,
@@ -346,8 +341,8 @@ def parse_and_run(args_dict: dict,
            include_sizes=include_sizes_param,
            include_counts=include_counts_param,
            verbose=verbose,
-           specific_extension=specific_extension_param,
-           keyword=specific_keyword_param,
+           specific_extension=specific_extension,
+           keyword=keyword,
            subfolder_level=level,
            progress_tracker=progress_tracker)
 
@@ -357,40 +352,12 @@ def parse_and_run(args_dict: dict,
 
 def main():
     """Runs main code"""
-    # initializing current module progress tracker instance
-    progress_tracker = ModuleProgressTracker()
+    # initializing current progress tracker instance
+    progress_tracker = ProgressTracker()
 
     # running code in separate thread
     progress_tracker.run(function=parse_and_run,
                          args_parser=get_args_dict)
-
-    # getting args dict
-    args_dict = get_args_dict()
-
-
-
-    # checking debug toggle
-
-    # if debug toggle is on
-    if DEBUG:
-
-        # getting debug tree from default parameters
-        pytree(start_path=DEBUG_FOLDER,
-               include_files=True,
-               include_sizes=True,
-               include_counts=True,
-               verbose=True,
-               specific_extension='.txt',
-               keyword=False,
-               subfolder_level=1,
-               no_recolor=True,
-               force_absolute_ids=False,
-               windows=False)
-
-    # if debug toggle is off
-    else:
-
-
 
 ######################################################################
 # running main function

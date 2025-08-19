@@ -10,7 +10,6 @@
 # importing required libraries
 from time import time
 from time import sleep
-from sys import stdout
 from threading import Lock
 from threading import Event
 from os import _exit  # noqa
@@ -22,8 +21,7 @@ from src.utils.aux_funcs import get_time_str
 from src.utils.global_vars import UPDATE_TIME
 from src.utils.global_vars import MEMORY_LIMIT
 from src.utils.aux_funcs import get_number_string
-from src.utils.aux_funcs import enter_to_continue
-from src.utils.aux_funcs import print_execution_parameters
+from src.utils.aux_funcs import get_adjusted_file_size_string
 
 #####################################################################
 # ProgressTracker definition
@@ -57,14 +55,17 @@ class ProgressTracker:
         self.folders_num = 0
         self.scanned_num = 0
 
-        # verbose
+        # bools
+        self.include_files = False
+        self.include_counts = False
+        self.include_sizes = False
         self.verbose = False
 
         # tree
         self.tree = None
 
-        # summary
-        self.summary_str = None
+        # total size
+        self.total_size = 0
 
         # progress
         self.progress_string = ''
@@ -236,7 +237,7 @@ class ProgressTracker:
         progress_string = f''
 
         # updating progress string based on attributes
-        progress_string += f'scanning files/folders...'
+        progress_string += f'scanning files...'
         progress_string += f' {self.wheel_symbol}'
         progress_string += f' | files: {self.files_num}'
         progress_string += f' | folders: {self.folders_num}'
@@ -276,14 +277,83 @@ class ProgressTracker:
         """
         Prints tree on the console.
         """
-        pass
+        # printing spacer
+        print()
+
+        # printing tree
+        print(self.tree)
+
+    def get_files_str(self) -> str:
+        """
+        Returns files string,
+        based on class attributes.
+        """
+        # defining placeholder value for files str
+        files_str = f'{self.files_num} file'
+
+        # checking files count
+        if self.files_num != 1:
+
+            # updating files string
+            files_str += 's'
+
+        # returning files string
+        return files_str
+
+    def get_folders_str(self) -> str:
+        """
+        Returns folders string,
+        based on class attributes.
+        """
+        # defining placeholder value for folders str
+        folders_str = f'{self.folders_num} folder'
+
+        # checking folders count
+        if self.folders_num != 1:
+
+            # updating folders string
+            folders_str += 's'
+
+        # returning folders string
+        return folders_str
+
+    def get_total_sizes_str(self) -> str:
+        """
+        Returns adjusted total
+        size string.
+        """
+        # getting adjusted size
+        total_sizes_str = get_adjusted_file_size_string(file_size_in_bytes=self.total_size)
+
+        # returning total sizes str
+        return total_sizes_str
+
+    def get_summary_string(self) -> str:
+        """
+        Returns updated summary string
+        based on class attributes.
+        """
+        # defining placeholder value for summary string
+        summary_str = ''
+
+        # getting files/folders/sizes strings
+        files_str = self.get_files_str()
+        folders_str = self.get_folders_str()
+        sizes_str = self.get_total_sizes_str()
+
+        # returning summary string
+        return summary_str
 
     def print_summary(self) -> None:
         """
         Prints summary of scanned
         files/folders on the console.
         """
-        pass
+        # getting summary string
+        summary_str = self.get_summary_string()
+
+        # print summary string
+        print(summary_str)
 
     def signal_stop(self) -> None:
         """
@@ -383,19 +453,6 @@ class ProgressTracker:
         # joining threads to ensure progress thread finished cleanly
         self.progress_thread.join()
 
-    @staticmethod
-    def normal_exit() -> None:
-        """
-        Prints process complete message
-        before terminating execution.
-        """
-        # defining final message
-        f_string = f'\n'
-        f_string += f'analysis complete!'
-
-        # printing final message
-        print(f_string)
-
     def keyboard_interrupt_exit(self) -> None:
         """
         Prints exception message
@@ -435,15 +492,6 @@ class ProgressTracker:
         # getting args dict
         args_dict = args_parser()
 
-        # printing execution parameters
-        print_execution_parameters(params_dict=args_dict)
-
-        # getting skip enter bool
-        skip_enter = args_dict['skip_enter']
-
-        # waiting for user input
-        enter_to_continue(skip=skip_enter)
-
         # starting progress thread
         self.start_thread()
 
@@ -468,9 +516,6 @@ class ProgressTracker:
 
             # printing summary string
             self.print_summary()
-
-            # printing final message
-            self.normal_exit()
 
         # catching Ctrl+C events
         except KeyboardInterrupt:
