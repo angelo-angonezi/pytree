@@ -341,6 +341,20 @@ class ProgressTracker:
         folders_str = self.get_folders_str()
         sizes_str = self.get_total_sizes_str()
 
+        # checking toggles
+        if self.include_files:
+
+            # updating summary string
+            summary_str += f'{files_str}, '
+
+        # updating summary string
+        summary_str += f'{folders_str}'
+
+        if self.include_sizes:
+
+            # updating summary string
+            summary_str += f', {sizes_str}'
+
         # returning summary string
         return summary_str
 
