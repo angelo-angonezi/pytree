@@ -15,8 +15,6 @@ from os.path import join
 from pathlib import Path
 from os.path import getsize
 from os import get_terminal_size
-
-# importing global variables
 from src.utils.global_vars import ONE_KB
 from src.utils.global_vars import ONE_MB
 from src.utils.global_vars import ONE_GB
@@ -25,6 +23,21 @@ from src.utils.global_vars import CACHE_FOLDERS
 
 ######################################################################
 # defining auxiliary functions
+
+
+def spacer(char: str = '_',
+           reps: int = 50
+           ) -> None:
+    """
+    Given a char and a number of reps,
+    prints a "spacer" string assembled
+    by multiplying char by reps.
+    """
+    # defining spacer string
+    spacer_str = char * reps
+
+    # printing spacer string
+    print(spacer_str)
 
 
 def get_console_width() -> int:
@@ -97,6 +110,50 @@ def print_progress_message(base_string: str,
 
         # printing message
         flush_string(string=base_string)
+
+
+def print_dict_elements(dict_name: str,
+                        a_dict: dict
+                        ) -> None:
+    """
+    Given a dictionary, prints each key and
+    value side by side on a new line, such as:
+    --dict_name--
+    key1: value1
+    key2: value2
+    """
+    # defining base name string
+    params_string = f'--{dict_name}--'
+
+    # getting dict items
+    dict_items = a_dict.items()
+
+    # iterating over dict items
+    for dict_item in dict_items:
+
+        # getting params key/value
+        param_key, param_value = dict_item
+
+        # checking if param is channels dict
+        if param_key == 'channels':
+
+            # getting channels list
+            channels_list = param_value.split(',')
+
+            # getting channel dict printable elements
+            channels_list = [f'\n{element}' for element in channels_list]
+
+            # updating param value
+            param_value = ''.join(channels_list)
+
+        # getting current param string
+        current_param_string = f'\n{param_key}: {param_value}'
+
+        # appending current param string to params string
+        params_string += current_param_string
+
+    # printing final params string
+    print(params_string)
 
 
 def get_absolute_path(path_to_file_or_folder: str) -> Path:
@@ -297,6 +354,130 @@ def get_number_of_files_inside_folder(path_to_folder: Path) -> int:
 
     # returning count
     return file_and_folder_count
+
+
+def enter_to_continue(skip: bool = False) -> None:
+    """
+    If skip param is False,
+    waits for user input ("Enter")
+    and once press, continues to run code.
+    """
+    # checking skip bool
+    if not skip:
+
+        # defining enter_string
+        enter_string = f'press "Enter" to continue'
+
+        # waiting for user input
+        input(enter_string)
+
+    # returning None
+    return None
+
+
+def get_number_string(num: int or float,
+                      digits: int = 2
+                      ) -> str:
+    """
+    Given a number, returns formatted
+    number with leading zeroes so that
+    the number of digits param is preserved.
+    """
+    # getting is int bool
+    num_is_int = isinstance(num, int)
+
+    # checking if number is int
+    if num_is_int:
+
+        # formating number string
+        number_string = f'{num:0{digits}d}'
+
+    else:
+
+        # formating number string
+        number_string = f'{num:4.{digits}f}'
+
+    # returning formatted number string
+    return number_string
+
+
+def get_time_str(time_in_seconds: int) -> str:
+    """
+    Given a time in seconds, returns time in
+    adequate format (seconds, minutes or hours).
+    """
+    # checking whether seconds > 60
+    if time_in_seconds >= 60:
+
+        # converting time to minutes
+        time_in_minutes = time_in_seconds / 60
+
+        # checking whether minutes > 60
+        if time_in_minutes >= 60:
+
+            # converting time to hours
+            time_in_hours = time_in_minutes / 60
+
+            # defining time string based on hours
+            defined_time = round(time_in_hours)
+            time_string = f'{defined_time}h'
+
+        else:
+
+            # defining time string based on minutes
+            defined_time = round(time_in_minutes)
+            time_string = f'{defined_time}m'
+
+    else:
+
+        # defining time string based on seconds
+        defined_time = round(time_in_seconds)
+        time_string = f'{defined_time}s'
+
+    # returning time string
+    return time_string
+
+
+def print_execution_parameters(params_dict: dict) -> None:
+    """
+    Given a list of execution parameters,
+    prints given parameters on console,
+    such as:
+    '''
+    --Execution parameters--
+    input_folder: /home/angelo/Desktop/ml_temp/imgs/
+    output_folder: /home/angelo/Desktop/ml_temp/overlays/
+    '''
+    """
+    # defining dict name
+    dict_name = 'Execution parameters'
+
+    # getting current module name
+    module_name = Path(__main__.__file__).stem
+
+    # defining placeholder value for print dict
+    print_dict = {}
+
+    # getting module dict
+    module_dict = {'module': module_name}
+
+    # getting gpu dict
+    gpu_dict = {'gpu_available' : GPU}
+
+    # updating params_dict
+    print_dict.update(module_dict)
+    print_dict.update(params_dict)
+    print_dict.update(gpu_dict)
+
+    # printing spacer
+    spacer()
+
+    # printing dict elements
+    print_dict_elements(dict_name=dict_name,
+                        a_dict=print_dict)
+
+    # printing spacer
+    spacer()
 
 ######################################################################
 # end of current module
