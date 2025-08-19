@@ -315,13 +315,13 @@ def parse_and_run(args_dict: dict,
     start_path = args_dict['start_path'][0]
 
     # checking whether tree should contain only dirs or also the files
-    include_files_param = not (args_dict['dirs_only_flag'])
+    include_files = not (args_dict['dirs_only_flag'])
 
     # checking whether tree should contain file and folder counts information
-    include_counts_param = args_dict['show_counts_flag']
+    include_counts = args_dict['show_counts_flag']
 
     # checking whether tree should contain file and folder size information
-    include_sizes_param = args_dict['show_sizes_flag']
+    include_sizes = args_dict['show_sizes_flag']
 
     # checking whether display progress message while reading info
     verbose = args_dict['verbose']
@@ -337,9 +337,9 @@ def parse_and_run(args_dict: dict,
 
     # running pytree function
     pytree(start_path=start_path,
-           include_files=include_files_param,
-           include_sizes=include_sizes_param,
-           include_counts=include_counts_param,
+           include_files=include_files,
+           include_sizes=include_sizes,
+           include_counts=include_counts,
            verbose=verbose,
            specific_extension=specific_extension,
            keyword=keyword,

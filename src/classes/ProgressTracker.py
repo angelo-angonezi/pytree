@@ -56,7 +56,6 @@ class ProgressTracker:
         self.scanned_num = 0
 
         # bools
-        self.include_files = False
         self.include_counts = False
         self.include_sizes = False
         self.verbose = False
@@ -341,14 +340,11 @@ class ProgressTracker:
         folders_str = self.get_folders_str()
         sizes_str = self.get_total_sizes_str()
 
-        # checking toggles
-        if self.include_files:
-
-            # updating summary string
-            summary_str += f'{files_str}, '
+        # updating summary string
+        summary_str += f'{files_str}'
 
         # updating summary string
-        summary_str += f'{folders_str}'
+        summary_str += f', {folders_str}'
 
         if self.include_sizes:
 
