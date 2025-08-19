@@ -7,10 +7,12 @@
 # imports
 
 # importing required libraries
+import __main__
 from os import walk
 from os import system
 from os import listdir
 from sys import stdout
+from sys import platform
 from os.path import join
 from pathlib import Path
 from os.path import getsize
@@ -461,13 +463,9 @@ def print_execution_parameters(params_dict: dict) -> None:
     # getting module dict
     module_dict = {'module': module_name}
 
-    # getting gpu dict
-    gpu_dict = {'gpu_available' : GPU}
-
     # updating params_dict
     print_dict.update(module_dict)
     print_dict.update(params_dict)
-    print_dict.update(gpu_dict)
 
     # printing spacer
     spacer()

@@ -4,18 +4,8 @@
 # variables used in main script.
 
 ######################################################################
-# imports
-
-from sys import platform
-from os.path import join
-
-######################################################################
 # defining global variables
 
-CURRENT_OS = platform
-DEBUG = False
-DEBUG_FOLDER = join('.', 'test_folder')
-DEFAULT_START_PATH = '.'
 UPDATE_TIME = 0.1
 MEMORY_LIMIT = 85
 ONE_BYTE = 1

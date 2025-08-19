@@ -6,30 +6,21 @@
 ######################################################################
 # imports
 
-# adding project to path
-from sys import path
-path.append('C:\\pycharm_projects\\pytree')
-
 # importing required libraries
 from os import sep
 from os import walk
 from treelib import Tree
 from pathlib import Path
 from argparse import ArgumentParser
+from src.utils.global_vars import CACHE_FOLDERS
 from src.utils.aux_funcs import get_console_width
 from src.utils.aux_funcs import get_absolute_path
 from src.utils.aux_funcs import print_progress_message
 from src.utils.aux_funcs import get_file_size_in_bytes
+from src.classes.ProgressTracker import ProgressTracker
 from src.utils.aux_funcs import get_folder_size_in_bytes
 from src.utils.aux_funcs import get_adjusted_file_size_string
 from src.utils.aux_funcs import get_number_of_files_inside_folder
-
-# importing global variables
-from src.utils.global_vars import DEBUG
-from src.utils.global_vars import CURRENT_OS
-from src.utils.global_vars import DEBUG_FOLDER
-from src.utils.global_vars import CACHE_FOLDERS
-from src.utils.global_vars import DEFAULT_START_PATH
 
 #####################################################################
 # argument parsing related functions
@@ -120,36 +111,21 @@ def get_args_dict() -> dict:
 # defining auxiliary functions
 
 
-def pytree(start_path: str = '.',
-           include_files: bool = True,
-           include_sizes: bool = False,
-           include_counts: bool = False,
-           verbose: bool = True,
-           specific_extension: str or None = None,
-           keyword: str or None = None,
-           subfolder_level: int = 1,
-           no_recolor: bool = False,
-           force_absolute_ids: bool = True,
-           windows: bool = False
-           ) -> None:
+def get_tree(start_path: str,
+             include_files: bool = True,
+             include_sizes: bool = False,
+             include_counts: bool = False,
+             specific_extension: str or None = None,
+             keyword: str or None = None,
+             subfolder_level: int = 1,
+             progress_tracker: ProgressTracker = ProgressTracker
+             ) -> Tree:
     """
-    Prints 'tree' of files and subfolders inside
-    given start folder, including file size and
-    file count, according to given parameters.
-    :param start_path: String. Represents an absolute or relative path.
-    :param include_files: Boolean. Indicates whether to also include the files in the tree.
-    :param include_sizes: Boolean. Indicates whether tree should display file and folder sizes, in megabytes.
-    :param include_counts: Boolean. Indicates whether tree should display file and folder counts.
-    :param verbose: Boolean. Indicates whether tree should display progress message while reading.
-    :param specific_extension: String. Represents a specific file extension to be searched.
-    :param keyword: String. Represents a specific keyword to be searched.
-    :param subfolder_level: Integer. Represents subfolder depth to be used when creating tree.
-    :param no_recolor: Boolean. Indicates whether to skip recoloring step done when running on linux.
-    :param force_absolute_ids: Boolean. Indicates whether ids should be absolute. They will
-    be relative if start_path is relative, and absolute otherwise.
-    :param windows: Boolean. Indicates whether program is running on windows system.
+    # TODO: update docstring.
+    Docstring.
     """
-    # creating tree instance
+    # TODO: modularize this code!
+    # defining placeholder value for Tree
     tree = Tree()
 
     # defining first flag
@@ -157,18 +133,6 @@ def pytree(start_path: str = '.',
 
     # getting dirs and files
     all_files_and_folders = walk(start_path)
-
-    # starting dirs, files and size count
-    total_dirs_num = 0
-    total_files_num = 0
-
-    # defining placeholder value for scanned files num
-    scanned_files_num = 0
-
-    # printing execution message
-    f_string = f'reading data...'
-    print_progress_message(base_string=f_string,
-                           conditional=verbose)
 
     # iterating over dirs and files
     for root, _, files in all_files_and_folders:
@@ -185,14 +149,14 @@ def pytree(start_path: str = '.',
             # skipping file
             continue
 
-        # getting path root
-        p_root = Path(root)
+        # getting root path
+        root_path = Path(root)
 
-        # converting path root to string
-        p_root_str = str(p_root)
+        # converting data types
+        root_path_str = str(root_path)
 
         # getting current file/dir level (counting OS separator occurrences)
-        current_level = p_root_str.count(sep)
+        current_level = root_path_str.count(sep)
 
         # checking if desired subfolder level is not -1 (all subfolders)
         if subfolder_level != -1:
@@ -203,47 +167,40 @@ def pytree(start_path: str = '.',
                 # skipping current file/dir
                 continue
 
-        # setting parent id
+        # checking if element is first
         if first:
+
+            # updating parent id
             parent_id = None
+
+            # setting first flag to False
             first = False
+
         else:
-            parent = p_root.parent
-            parent_id = parent.absolute() if force_absolute_ids else parent
+
+            # updating parent id
+            parent_id = root_path.parent
 
         # getting absolute path
-        abs_path = p_root.absolute()
-
-        # getting root id
-        p_root_id = abs_path if force_absolute_ids else p_root
+        abs_path = root_path.absolute()
 
         # getting dir name
-        dir_name = (p_root.name if p_root.name != "" else ".")
+        dir_name = (root_path.name if root_path.name != "" else ".")
         dir_name += '/'
 
         # getting based text string
-        colored_text_string = f"{dir_name}"
-
-        # getting recolor bool
-        recolor = (not windows) and (not no_recolor)
-
-        # checking whether to recolor string
-        if recolor:
-
-            # coloring dir string
-            colored_text_string = f"\033[0;34;42m{dir_name}"
-
-            # recoloring to white so that it doesn't affect other nodes
-            colored_text_string += f"\033[0;37;48m"
+        text_string = f"{dir_name}"
 
         # getting number of files and folders inside directory
         current_dir_file_and_folder_count = get_number_of_files_inside_folder(path_to_folder=abs_path)
 
-        # adding count to dir name
+        # checking if should include counts
         if include_counts:
-            colored_text_string += f' [{current_dir_file_and_folder_count}]'
 
-        # adding dir size to name
+            # adding count to dir name
+            text_string += f' [{current_dir_file_and_folder_count}]'
+
+        # checking if should include sizes
         if include_sizes:
 
             # getting dir size
@@ -253,32 +210,24 @@ def pytree(start_path: str = '.',
             adjusted_dir_size = get_adjusted_file_size_string(file_size_in_bytes=dir_size_in_bytes)
 
             # appending dir size to colored string
-            colored_text_string += f' ({adjusted_dir_size})'
+            text_string += f' ({adjusted_dir_size})'
 
         # creating folder node
-        tree.create_node(tag=colored_text_string,
-                         identifier=p_root_id,
+        tree.create_node(tag=text_string,
+                         identifier=root_path,
                          parent=parent_id)
 
-        # increasing total dirs count
-        total_dirs_num += 1
+        # updating progress tracker attributes
+        progress_tracker.folders_num += 1
 
         # iterating over files
         for file in files:
 
-            # updating scanned files num
-            scanned_files_num += 1
-
-            # printing execution message
-            f_string = f'reading data... '
-            f_string += f'| files: {total_files_num} '
-            f_string += f'| folders: {total_dirs_num} '
-            f_string += f'| scanned: {scanned_files_num} '
-            print_progress_message(base_string=f_string,
-                                   conditional=verbose)
+            # updating progress tracker attributes
+            progress_tracker.scanned_num += 1
 
             # getting file id
-            f_id = p_root_id / file
+            f_id = root_path / file
 
             # getting file name
             file_name = f_id.name
@@ -301,7 +250,7 @@ def pytree(start_path: str = '.',
                     # skipping to next file
                     continue
 
-            # adding file size to name
+            # checking if should include sizes
             if include_sizes:
 
                 # getting file size
@@ -319,97 +268,56 @@ def pytree(start_path: str = '.',
                 # creating tree node from file
                 tree.create_node(tag=file_name,
                                  identifier=f_id,
-                                 parent=p_root_id)
+                                 parent=root_path)
 
-            # increasing total files count
-            total_files_num += 1
+                # updating progress tracker attributes
+                progress_tracker.files_num += 1
 
-    # getting dirs and files string
-
-    # checking dirs num
-    if total_dirs_num == 1:
-        dirs_string = 'directory'
-    else:
-        dirs_string = 'directories'
-
-    # checking files num
-    if total_files_num == 1:
-        files_string = 'file'
-    else:
-        files_string = 'files'
-
-    # defining dirs and files string
-    dirs_and_files_string = f'{total_dirs_num - 1} {dirs_string}, {total_files_num} {files_string}'
-
-    # adding full size
-    if include_sizes:
-
-        # getting start path absolute path
-        start_abs_path = get_absolute_path(path_to_file_or_folder=start_path)
-
-        # getting folder size in bytes
-        full_size = get_folder_size_in_bytes(path_to_folder=start_abs_path)
-
-        # getting adjusted folder size string
-        adjusted_full_size = get_adjusted_file_size_string(file_size_in_bytes=full_size)
-        full_size_string = f', {adjusted_full_size}'
-
-        # appending folder size to dirs and files string
-        dirs_and_files_string += full_size_string
-
-    # getting tree size
-    size = tree.size()
-
-    # checking if tree is empty
-    if size == 0:
-
-        # printing invalid input message
-        f_string = 'Invalid input. Must be a directory.\n'
-        f_string += 'Please check input and try again.'
-        print(f_string)
-
-    # if tree is not empty
-    else:
-
-        # getting console width
-        console_width = get_console_width()
-
-        # adding spacer
-        f_string = 'showing tree...'
-        f_string += ' ' * (console_width - 5)
-        f_string += '\n'
-        print_progress_message(base_string=f_string,
-                               conditional=verbose)
-
-        # displaying tree
-        print(tree)
-
-        # printing folder summary
-        print(dirs_and_files_string)
-
-######################################################################
-# defining main function
+    # returning tree
+    return tree
 
 
-def main():
+def pytree(start_path: str = '.',
+           include_files: bool = True,
+           include_sizes: bool = False,
+           include_counts: bool = False,
+           verbose: bool = True,
+           specific_extension: str or None = None,
+           keyword: str or None = None,
+           subfolder_level: int = 1,
+           no_recolor: bool = False,
+           force_absolute_ids: bool = True,
+           windows: bool = False,
+           progress_tracker: ProgressTracker = ProgressTracker
+           ) -> None:
     """
-    Runs main code.
-    :return: None.
+    Docstring.
     """
-    # getting args dict
-    args_dict = get_args_dict()
+    # updating verbose toggle
+    progress_tracker.verbose = verbose
 
+    # getting current tree
+    current_tree = get_tree()
+
+
+def parse_and_run(args_dict: dict,
+                  progress_tracker: ModuleProgressTracker
+                  ) -> None:
+    """
+    Extracts args from args_dict
+    and runs module function.
+    """
     # checking if user has passed specific folder
     start_path = args_dict['start_path'][0]
 
     # if user has not passed specific folder
     if start_path is None:
 
-        # getting default start path (".")
+        # getting default start path
         start_path = DEFAULT_START_PATH
 
     # checking whether tree should contain only dirs or also the files
-    include_files_param = not(args_dict['dirs_only_flag'])
+    include_files_param = not (args_dict['dirs_only_flag'])
 
     # checking whether tree should contain file and folder size information
     include_sizes_param = args_dict['show_sizes_flag']
@@ -432,8 +340,34 @@ def main():
     # getting no recolor toggle
     no_recolor = args_dict['no_recolor']
 
-    # checking whether to recolor folder strings
-    windows = CURRENT_OS.startswith('win')
+    # running pytree function
+    pytree(start_path=start_path,
+           include_files=include_files_param,
+           include_sizes=include_sizes_param,
+           include_counts=include_counts_param,
+           verbose=verbose,
+           specific_extension=specific_extension_param,
+           keyword=specific_keyword_param,
+           subfolder_level=level,
+           progress_tracker=progress_tracker)
+
+######################################################################
+# defining main function
+
+
+def main():
+    """Runs main code"""
+    # initializing current module progress tracker instance
+    progress_tracker = ModuleProgressTracker()
+
+    # running code in separate thread
+    progress_tracker.run(function=parse_and_run,
+                         args_parser=get_args_dict)
+
+    # getting args dict
+    args_dict = get_args_dict()
+
+
 
     # checking debug toggle
 
@@ -456,18 +390,7 @@ def main():
     # if debug toggle is off
     else:
 
-        # getting tree based on parsed parameters
-        pytree(start_path=start_path,
-               include_files=include_files_param,
-               include_sizes=include_sizes_param,
-               include_counts=include_counts_param,
-               verbose=verbose,
-               specific_extension=specific_extension_param,
-               keyword=specific_keyword_param,
-               subfolder_level=level,
-               no_recolor=no_recolor,
-               force_absolute_ids=False,
-               windows=windows)
+
 
 ######################################################################
 # running main function
