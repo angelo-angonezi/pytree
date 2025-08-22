@@ -161,9 +161,11 @@ def parse_and_run(args_dict: dict,
 
     # getting extension
     extension = args_dict['extension']
+    # TODO: implement the logic for this
 
     # getting keyword
     keyword = args_dict['keyword']
+    # TODO: implement the logic for this
 
     # getting level
     level = args_dict['level']
