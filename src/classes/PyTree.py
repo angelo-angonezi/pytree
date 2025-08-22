@@ -1,0 +1,624 @@
+# PyTree module
+
+# Code destined to defining
+# PyTree class and related
+# attributes/methods.
+
+######################################################################
+# imports
+
+# importing required libraries
+from os import walk
+from time import time
+from time import sleep
+from sys import stdout
+from treelib import Tree
+from os.path import join
+from os.path import split
+from os.path import abspath
+from os.path import dirname
+from os.path import normpath
+from threading import Lock
+from threading import Event
+from os.path import getsize
+from os import _exit  # noqa
+from threading import Thread
+from psutil import cpu_percent
+from psutil import virtual_memory
+from src.utils.aux_funcs import is_cache
+from src.utils.aux_funcs import get_size_str
+from src.utils.aux_funcs import flush_string
+from src.utils.aux_funcs import get_time_str
+from src.utils.global_vars import UPDATE_TIME
+from src.utils.global_vars import MEMORY_LIMIT
+from src.utils.aux_funcs import get_path_depth
+from src.utils.aux_funcs import get_start_path
+from src.utils.global_vars import CACHE_FOLDERS
+from src.utils.aux_funcs import get_number_string
+from src.classes.ProgressTracker import ProgressTracker
+
+#####################################################################
+# progress tracking related functions
+
+
+class ModuleProgressTracker(ProgressTracker):
+    """
+    Defines ModuleProgressTracker class.
+    """
+    # defining ProgressTracker init
+    def __init__(self) -> None:
+        """
+        Initializes a ModuleProgressTracker instance
+        and defines class attributes.
+        """
+        # inheriting attributes and methods from ProgressTracker
+        super().__init__()
+
+        # defining current module specific attributes
+
+        # folders
+        self.folders_num = 0
+        self.current_folder = 0
+
+        # files
+        self.files_num = 0
+        self.current_file = 0
+
+        # tree
+        self.tree = None
+
+    # overwriting class methods (using current module specific attributes)
+
+    def get_progress_string(self) -> str:
+        """
+        Returns a formated progress
+        string, based on current progress
+        attributes.
+        """
+        # assembling current progress string
+        progress_string = f''
+
+        # checking if iterations total has already been obtained
+
+        # if totals are still being updated
+        if not self.totals_updated.is_set():
+
+            # updating progress string based on attributes
+            progress_string += f'scanning paths...'
+            progress_string += f' {self.wheel_symbol}'
+            progress_string += f' | folders: {self.folders_num}'
+            progress_string += f' | files: {self.files_num}'
+            progress_string += f' | scanned: {self.iterations_num}'
+            progress_string += f' | elapsed time: {self.elapsed_time_str}'
+
+        # if total iterations already obtained
+        else:
+
+            # updating progress string based on attributes
+            progress_string += f'creating tree...'
+            progress_string += f' {self.wheel_symbol}'
+            progress_string += f' | folder: {self.current_folder}/{self.folders_num}'
+            progress_string += f' | file: {self.current_file}/{self.files_num}'
+            progress_string += f' | progress: {self.progress_percentage_str}'
+            progress_string += f' | elapsed time: {self.elapsed_time_str}'
+            # progress_string += f' | ETC: {self.etc_str}'
+            # progress_string += f' | C: {self.cpu_usage_str}'
+            # progress_string += f' | R: {self.ram_usage_str}'
+
+        # returning progress string
+        return progress_string
+
+    def update_totals(self,
+                      args_dict: dict
+                      ) -> None:
+        """
+        Implements module specific method
+        to update total iterations num.
+        """
+        # getting start path
+        start_path = args_dict['start_path']
+        start_path = get_start_path(start_path)
+
+        # getting folders/subfolders/files in start path
+        folders_subfolders_files = walk(start_path,
+                                        topdown=False)
+
+        # iterating over folders/subfolders/files
+        for item in folders_subfolders_files:
+
+            # updating progress tracker attributes
+            self.folders_num += 1
+
+            # getting current folder files
+            folder, _, files = item
+
+            # getting folder is cache bool
+            folder_is_cache = is_cache(path=folder,
+                                       cache_folders=CACHE_FOLDERS)
+
+            # checking if current folder is cache
+            if folder_is_cache:
+
+                # skipping to next folder
+                continue
+
+            # iterating over files in folder
+            for _ in files:
+
+                # updating progress tracker attributes
+                self.files_num += 1
+                self.iterations_num += 1
+
+        # updating totals string
+        totals_string = f'totals...'
+        totals_string += f' | folders: {self.folders_num}'
+        totals_string += f' | files: {self.files_num}'
+        totals_string += f' | scanned: {self.iterations_num}'
+        self.totals_string = totals_string
+
+        # signaling totals updated
+        self.signal_totals_updated()
+
+    def normal_exit(self) -> None:
+        """
+        Implements module specific method
+        to define what to print before
+        terminating execution.
+        """
+        # printing spacer
+        print()
+
+        # showing tree
+        self.tree.show()
+
+#####################################################################
+# PyTree definition
+
+
+class PyTree:
+    """
+    Defines PyTree class.
+    """
+    def __init__(self,
+                 start_path: str,
+                 dirs_only: bool,
+                 include_counts: bool,
+                 include_sizes: bool,
+                 extension: str,
+                 keyword: str,
+                 level: int,
+                 cache_folders: list = CACHE_FOLDERS,
+                 progress_tracker: ModuleProgressTracker = ModuleProgressTracker
+                 ) -> None:
+        """
+        Initializes a PyTree instance
+        and defines class attributes.
+        """
+        # creating attributes from input
+        self.start_path = start_path
+        self.dirs_only = dirs_only
+        self.include_counts = include_counts
+        self.include_sizes = include_sizes
+        self.extension = extension
+        self.keyword = keyword
+        self.level = level
+        self.cache_folders = cache_folders
+        self.progress_tracker = progress_tracker
+
+        # getting start level
+        self.start_level = get_path_depth(path=self.start_path)
+
+        # defining base tree dict
+        self.tree_dict = {}
+
+    def get_path_level(self,
+                       path: str
+                       ) -> int:
+        """
+        Given a path, returns its
+        depth normalized by start
+        path depth
+        """
+        # getting current path depth
+        path_depth = get_path_depth(path=path)
+
+        # getting path level
+        path_level = path_depth - self.start_level
+
+        # returning path level
+        return path_level
+
+    def get_path_dict(self,
+                      name: str,
+                      path: str
+                      ) -> dict:
+        """
+        Given a path, returns its
+        base description dict.
+        """
+        # getting base path info
+        path_level = self.get_path_level(path=path)
+        path_id = abspath(path=path)
+        parent_folder = dirname(p=path)
+        parent_id = abspath(path=parent_folder)
+
+        # assembling base path dict
+        path_dict = {'name': name,
+                     'id': path_id,
+                     'level': path_level,
+                     'parent': parent_id}
+
+        # returning base path dict
+        return path_dict
+
+    def get_file_dict(self,
+                      file_name: str,
+                      file_path: str
+                      ) -> dict:
+        """
+        Given a file path, returns
+        its description dict.
+        """
+        # getting base path dict
+        base_dict = self.get_path_dict(name=file_name,
+                                       path=file_path)
+
+        # updating base dict
+        base_dict['type'] = 'file'
+
+        # checking include sizes toggle
+        if self.include_sizes:
+
+            # getting file size
+            file_size = getsize(filename=file_path)
+
+            # updating base dict
+            base_dict['size'] = file_size
+
+        # assembling file dict
+        file_dict = {file_path: base_dict}
+
+        # returning file dict
+        return file_dict
+
+    def get_folder_dict(self,
+                        folder_name: str,
+                        folder_path: str,
+                        folder_size: int,
+                        items_count: int
+                        ) -> dict:
+        """
+        Given a folder path, returns
+        its description dict.
+        """
+        # getting base path dict
+        base_dict = self.get_path_dict(name=folder_name,
+                                       path=folder_path)
+
+        # updating base dict
+        base_dict['type'] = 'folder'
+
+        # checking include sizes toggle
+        if self.include_sizes:
+
+            # updating base dict
+            base_dict['size'] = folder_size
+
+        # checking include counts toggle
+        if self.include_counts:
+
+            # updating base dict
+            base_dict['count'] = items_count
+
+        # assembling folder dict
+        folder_dict = {folder_path: base_dict}
+
+        # returning folder dict
+        return folder_dict
+
+    def get_tree_dict(self) -> dict:
+        """
+        Docstring.
+        """
+        # defining placeholder value for tree dict
+        tree_dict = {}
+
+        # getting folders/subfolders/files in start path
+        folders_subfolders_files = walk(self.start_path,
+                                        topdown=False)
+
+        # iterating over folders/subfolders/files
+        for item in folders_subfolders_files:
+
+            # updating progress tracker attributes
+            self.progress_tracker.current_folder += 1
+
+            # getting current folder path/subfolders/files
+            folder_path, subfolders, files = item
+
+            # getting current folder split
+            folder_split = split(p=folder_path)
+
+            # getting current folder name
+            folder_name = folder_split[-1]
+
+            # defining placeholder value for current folder size/count
+            folder_size = 0
+            items_count = 0
+
+            # getting current files num
+            files_num = len(files)
+
+            # updating progress tracker attributes
+            self.progress_tracker.files_num = files_num
+
+            # resetting progress tracker attributes
+            self.progress_tracker.current_file = 0
+
+            # iterating over current files
+            for file in files:
+
+                # updating progress tracker attributes
+                self.progress_tracker.current_iteration += 1
+                self.progress_tracker.current_file += 1
+
+                # getting current file path
+                file_path = join(folder_path,
+                                 file)
+
+                # normalizing path
+                file_path = normpath(path=file_path)
+
+                # getting current file dict
+                file_dict = self.get_file_dict(file_name=file,
+                                               file_path=file_path)
+
+                # updating tree dict
+                tree_dict.update(file_dict)
+
+                # checking include sizes toggle
+                if self.include_sizes:
+
+                    # getting file size
+                    file_size = file_dict['size']
+
+                    # updating folder size
+                    folder_size += file_size
+
+                # checking include counts toggle
+                if self.include_counts:
+
+                    # updating items count
+                    items_count += 1
+
+            # iterating over current subfolders
+            for subfolder in subfolders:
+
+                # getting current subfolder path
+                subfolder_path = join(folder_path,
+                                      subfolder)
+
+                # normalizing path
+                subfolder_path = normpath(path=subfolder_path)
+
+                # getting current subfolder dict
+                subfolder_dict = self.tree_dict.get(subfolder_path)  # this will never be None due to topdown=False!
+                                                                     # The subfolder will always have already been a
+                                                                     # folder in previous iteration!
+
+                # checking include sizes toggle
+                if self.include_sizes:
+
+                    # getting file size
+                    subfolder_size = subfolder_dict['size']
+
+                    # updating folder size
+                    folder_size += subfolder_size
+
+                # checking include counts toggle
+                if self.include_counts:
+
+                    # updating items count
+                    items_count += 1
+
+            # normalizing path
+            folder_path = normpath(path=folder_path)
+
+            # getting current folder dict
+            folder_dict = self.get_folder_dict(folder_name=folder_name,
+                                               folder_path=folder_path,
+                                               folder_size=folder_size,
+                                               items_count=items_count)
+
+            # updating tree dict
+            tree_dict.update(folder_dict)
+
+        # reversing dict (required since topdown was set to False in os.walk to enable size obtaining optimization)
+        tree_dict = dict(reversed(tree_dict.items()))
+
+        # returning tree dict
+        return tree_dict
+
+    def get_file_tag(self,
+                     path_dict: dict
+                     ) -> str:
+        """
+        Given a file path dict,
+        returns its tag, based on
+        specified attributes.
+        """
+        # getting base path dict info
+        path_name = path_dict['name']
+
+        # defining placeholder for file tag
+        file_tag = f'{path_name}'
+
+        # checking include sizes toggle
+        if self.include_sizes:
+
+            # getting additional path dict info
+            file_size = path_dict['size']
+
+            # getting size string
+            size_str = get_size_str(file_size)
+
+            # updating file tag
+            file_tag += f' ({size_str})'
+
+        # returning file tag
+        return file_tag
+
+    def get_folder_tag(self,
+                       path_dict: dict
+                       ) -> str:
+        """
+        Given a folder path dict,
+        returns its tag, based on
+        specified attributes.
+        """
+        # getting base path dict info
+        path_name = path_dict['name']
+
+        # defining placeholder for folder tag
+        folder_tag = f'{path_name}'
+
+        # checking include counts toggle
+        if self.include_counts:
+
+            # getting additional path dict info
+            items_count = path_dict['count']
+
+            # updating folder tag
+            folder_tag += f' [{items_count}]'
+
+        # checking include sizes toggle
+        if self.include_sizes:
+
+            # getting additional path dict info
+            folder_size = path_dict['size']
+
+            # getting size string
+            size_str = get_size_str(folder_size)
+
+            # updating folder tag
+            folder_tag += f' ({size_str})'
+
+        # returning folder tag
+        return folder_tag
+
+    def get_path_tag(self,
+                     path_dict: dict,
+                     path_type: str
+                     ) -> str:
+        """
+        Given a path dict, returns
+        respective tag, according
+        to path type.
+        """
+        # getting path is dir bool
+        path_is_dir = (path_type == 'folder')
+
+        # checking if path is dir
+        if path_is_dir:
+
+            # getting folder tag
+            path_tag = self.get_folder_tag(path_dict=path_dict)
+
+        else:
+
+            # getting file tag
+            path_tag = self.get_file_tag(path_dict=path_dict)
+
+        # returning path tag
+        return path_tag
+
+    def dict_to_tree(self,
+                     tree_dict: dict,
+                     ) -> Tree:
+        """
+        Docstring.
+        """
+        # defining base tree
+        tree = Tree()
+
+        # getting dict items
+        dict_items = tree_dict.items()
+
+        # iterating over dict items
+        for item in dict_items:
+
+            # getting current path/dict
+            path, path_dict = item
+
+            # getting base path dict info
+            path_level = path_dict['level']
+            path_type = path_dict['type']
+
+            # getting path is file bool
+            path_is_file = (path_type == 'file')
+
+            # checking path level
+            if path_level > self.start_level:
+
+                # skipping path
+                continue
+
+            # checking dirs only bool
+            if self.dirs_only:
+
+                # checking if path is file
+                if path_is_file:
+
+                    # skipping current node
+                    continue
+
+            # getting current path id/parent
+            path_id = path_dict['id']
+            parent_id = path_dict['parent']
+
+            # getting current path tag
+            path_tag = self.get_path_tag(path_dict=path_dict,
+                                         path_type=path_type)
+
+            # getting path is root bool
+            path_is_root = (path == self.start_path)
+
+            # checking if current path is root (first item)
+            if path_is_root:
+
+                # creating current node without specifying parent node (since it's root)
+                tree.create_node(tag=path_tag,
+                                 identifier=path_id)
+
+            else:
+
+                # creating current node inside parent node
+                tree.create_node(tag=path_tag,
+                                 identifier=path_id,
+                                 parent=parent_id)
+
+        # returning tree
+        return tree
+
+    def update_tree_dict(self) -> None:
+        """
+        Updates tree dict based on start path.
+        """
+        # getting updated tree dict
+        tree_dict = self.get_tree_dict()
+
+        # updating attributes
+        self.tree_dict = tree_dict
+
+    def update_tree(self) -> None:
+        """
+        Updates tree based on tree dict.
+        """
+        # getting updated tree
+        tree = self.dict_to_tree(tree_dict=self.tree_dict)
+
+        # updating attributes
+        self.progress_tracker.tree = tree
+
+######################################################################
+# end of current module
