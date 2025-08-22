@@ -208,6 +208,9 @@ class PyTree:
         # getting start level
         self.start_level = get_path_depth(path=self.start_path)
 
+        # getting apply level filter bool
+        self.apply_level_filter = (self.level != -1)
+
         # defining base tree dict
         self.tree_dict = {}
 
@@ -275,11 +278,8 @@ class PyTree:
             # updating base dict
             base_dict['size'] = file_size
 
-        # assembling file dict
-        file_dict = {file_path: base_dict}
-
-        # returning file dict
-        return file_dict
+        # returning base dict
+        return base_dict
 
     def get_folder_dict(self,
                         folder_name: str,
@@ -310,19 +310,13 @@ class PyTree:
             # updating base dict
             base_dict['count'] = items_count
 
-        # assembling folder dict
-        folder_dict = {folder_path: base_dict}
-
-        # returning folder dict
-        return folder_dict
+        # returning base dict
+        return base_dict
 
     def get_tree_dict(self) -> dict:
         """
         Docstring.
         """
-        # defining placeholder value for tree dict
-        tree_dict = {}
-
         # getting folders/subfolders/files in start path
         folders_subfolders_files = walk(self.start_path,
                                         topdown=False)
@@ -373,8 +367,11 @@ class PyTree:
                 file_dict = self.get_file_dict(file_name=file,
                                                file_path=file_path)
 
+                # assembling path dict
+                path_dict = {file: file_dict}
+
                 # updating tree dict
-                tree_dict.update(file_dict)
+                self.tree_dict.update(path_dict)
 
                 # checking include sizes toggle
                 if self.include_sizes:
@@ -394,17 +391,10 @@ class PyTree:
             # iterating over current subfolders
             for subfolder in subfolders:
 
-                # getting current subfolder path
-                subfolder_path = join(folder_path,
-                                      subfolder)
-
-                # normalizing path
-                subfolder_path = normpath(path=subfolder_path)
-
                 # getting current subfolder dict
-                subfolder_dict = self.tree_dict.get(subfolder_path)  # this will never be None due to topdown=False!
-                                                                     # The subfolder will always have already been a
-                                                                     # folder in previous iteration!
+                subfolder_dict = self.tree_dict.get(subfolder)  # this will never be None due to topdown=False!
+                                                                # The subfolder will always have already been a
+                                                                # folder in previous iteration!
 
                 # checking include sizes toggle
                 if self.include_sizes:
@@ -430,11 +420,14 @@ class PyTree:
                                                folder_size=folder_size,
                                                items_count=items_count)
 
+            # assembling path dict
+            path_dict = {folder_name: folder_dict}
+
             # updating tree dict
-            tree_dict.update(folder_dict)
+            self.tree_dict.update(path_dict)
 
         # reversing dict (required since topdown was set to False in os.walk to enable size obtaining optimization)
-        tree_dict = dict(reversed(tree_dict.items()))
+        tree_dict = dict(reversed(self.tree_dict.items()))
 
         # returning tree dict
         return tree_dict
@@ -557,11 +550,13 @@ class PyTree:
             # getting path is file bool
             path_is_file = (path_type == 'file')
 
-            # checking path level
-            if path_level > self.start_level:
+            # checking apply level filter
+            if self.apply_level_filter:
 
-                # skipping path
-                continue
+                if path_level > self.level:
+
+                    # skipping path
+                    continue
 
             # checking dirs only bool
             if self.dirs_only:

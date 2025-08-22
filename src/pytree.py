@@ -75,14 +75,6 @@ def get_args_dict() -> dict:
                         help='tree displays the number of files or folders inside each directory',
                         default=False)
 
-    # verbose param
-    parser.add_argument('-v', '--verbose',
-                        dest='verbose',
-                        required=False,
-                        action='store_true',
-                        help='shows progress message while reading files/folders data',
-                        default=False)
-
     # extension param
     parser.add_argument('-x', '--extension',
                         dest='extension',
@@ -121,7 +113,6 @@ def pytree(start_path: str,
            dirs_only: bool,
            include_counts: bool,
            include_sizes: bool,
-           verbose: bool,
            extension: str,
            keyword: str,
            level: int,
@@ -131,9 +122,6 @@ def pytree(start_path: str,
     Prints folder structure tree
     on the console.
     """
-    # updating progress tracker attributes
-    progress_tracker.verbose = verbose
-
     # initializing PyTree object
     tree = PyTree(start_path=start_path,
                   dirs_only=dirs_only,
@@ -171,9 +159,6 @@ def parse_and_run(args_dict: dict,
     # getting include sizes bool
     include_sizes = args_dict['show_sizes']
 
-    # getting verbose bool
-    verbose = args_dict['verbose']
-
     # getting extension
     extension = args_dict['extension']
 
@@ -188,7 +173,6 @@ def parse_and_run(args_dict: dict,
            dirs_only=dirs_only,
            include_counts=include_counts,
            include_sizes=include_sizes,
-           verbose=verbose,
            extension=extension,
            keyword=keyword,
            level=level,
