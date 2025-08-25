@@ -7,16 +7,14 @@
 # imports
 
 # importing required libraries
-from os import walk
 from sys import stdout
 from os.path import sep
-from os.path import join
 from os.path import abspath
 from os import get_terminal_size
-from src.utils.global_vars import ONE_KB
-from src.utils.global_vars import ONE_MB
-from src.utils.global_vars import ONE_GB
-from src.utils.global_vars import ONE_TB
+from utils.global_vars import ONE_KB
+from utils.global_vars import ONE_MB
+from utils.global_vars import ONE_GB
+from utils.global_vars import ONE_TB
 
 ######################################################################
 # defining auxiliary functions
