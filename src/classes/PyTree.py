@@ -87,7 +87,7 @@ class ModuleProgressTracker(ProgressTracker):
             progress_string += f' | file: {self.current_file}/{self.files_num}'
             progress_string += f' | progress: {self.progress_percentage_str}'
             progress_string += f' | elapsed time: {self.elapsed_time_str}'
-            # progress_string += f' | ETC: {self.etc_str}'
+            progress_string += f' | ETC: {self.etc_str}'
             # progress_string += f' | C: {self.cpu_usage_str}'
             # progress_string += f' | R: {self.ram_usage_str}'
 
@@ -361,7 +361,7 @@ class PyTree:
                                                file_path=file_path)
 
                 # assembling path dict
-                path_dict = {file: file_dict}
+                path_dict = {file_path: file_dict}
 
                 # updating tree dict
                 self.tree_dict.update(path_dict)
@@ -421,7 +421,7 @@ class PyTree:
                                                items_count=items_count)
 
             # assembling path dict
-            path_dict = {folder_name: folder_dict}
+            path_dict = {folder_path: folder_dict}
 
             # updating tree dict
             self.tree_dict.update(path_dict)
