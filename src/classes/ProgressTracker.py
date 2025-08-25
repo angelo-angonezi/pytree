@@ -10,6 +10,7 @@
 # importing required libraries
 from time import time
 from time import sleep
+from sys import stdout
 from threading import Lock
 from threading import Event
 from os import _exit  # noqa
@@ -21,7 +22,6 @@ from src.utils.aux_funcs import get_time_str
 from src.utils.global_vars import UPDATE_TIME
 from src.utils.global_vars import MEMORY_LIMIT
 from src.utils.aux_funcs import get_number_string
-from src.utils.aux_funcs import get_adjusted_file_size_string
 
 #####################################################################
 # ProgressTracker definition
@@ -49,24 +49,17 @@ class ProgressTracker:
         self.current_time = self.get_current_time()
         self.elapsed_time = 0
         self.elapsed_time_str = ''
+        self.etc = 0
+        self.etc_str = ''
 
-        # files/folders
-        self.files_num = 0
-        self.folders_num = 0
-        self.scanned_num = 0
-
-        # bools
-        self.include_counts = False
-        self.include_sizes = False
-        self.verbose = False
-
-        # tree
-        self.tree = None
-
-        # total size
-        self.total_size = 0
+        # iteration
+        self.iterations_num = 0
+        self.current_iteration = 0
+        self.totals_updated = Event()
 
         # progress
+        self.progress_percentage = 0
+        self.progress_percentage_str = ''
         self.progress_string = ''
 
         # threads
@@ -85,6 +78,9 @@ class ProgressTracker:
         # totals
         self.totals_string = ''
 
+        # end string
+        self.end_string = 'analysis complete!'
+
     @staticmethod
     def wait(seconds: float = 0.005) -> None:
         """
@@ -93,6 +89,48 @@ class ProgressTracker:
         """
         # sleeping
         sleep(seconds)
+
+    def print_totals(self) -> None:
+        """
+        Prints iterations totals.
+        """
+        # clearing console
+        self.clear_progress()
+
+        # printing totals string
+        print(self.totals_string)
+
+    def signal_totals_updated(self) -> None:
+        """
+        Sets threading.Event as set,
+        signaling totals updated.
+        """
+        # printing totals
+        self.print_totals()
+
+        # signaling the progress tracker to stop
+        self.totals_updated.set()
+
+        # waiting some time to ensure signal is perceived
+        self.wait(seconds=0.8)
+
+    def update_totals(self,
+                      args_dict: dict
+                      ) -> None:
+        """
+        Defines base method to obtain
+        and update total iterations num.
+        """
+        # updating attributes
+        self.iterations_num = 1
+
+        # updating totals string
+        totals_string = f'totals...'
+        totals_string += f' | iterations: {self.iterations_num}'
+        self.totals_string = totals_string
+
+        # signaling totals updated
+        self.signal_totals_updated()
 
     def update_wheel_symbol(self) -> None:
         """
@@ -148,6 +186,33 @@ class ProgressTracker:
         # returning elapsed time
         return elapsed_time
 
+    def get_etc(self) -> int:
+        """
+        Based on iteration and time
+        attributes, returns estimated time
+        of completion (ETC).
+        """
+        # defining base value for etc
+        etc = 3600
+
+        # getting iterations to go
+        iterations_to_go = self.iterations_num - self.current_iteration
+
+        # checking if first iteration is running
+        if self.current_iteration >= 1:
+
+            # calculating estimated time of completion
+            etc = iterations_to_go * self.elapsed_time / self.current_iteration
+
+            # rounding time
+            etc = round(etc)
+
+            # converting estimated time of completion to int
+            etc = int(etc)
+
+        # returning estimated time of completion
+        return etc
+
     def update_time_attributes(self) -> None:
         """
         Updates time related attributes.
@@ -156,6 +221,8 @@ class ProgressTracker:
         self.current_time = self.get_current_time()
         self.elapsed_time = self.get_elapsed_time()
         self.elapsed_time_str = get_time_str(time_in_seconds=self.elapsed_time)
+        self.etc = self.get_etc()
+        self.etc_str = get_time_str(time_in_seconds=self.etc)
 
     @staticmethod
     def get_cpu_usage() -> int:
@@ -223,6 +290,25 @@ class ProgressTracker:
         self.ram_usage = self.get_ram_usage()
         self.ram_usage_str = self.get_percentage_string(percentage=self.ram_usage)
 
+    def get_progress_percentage(self) -> int:
+        """
+        Returns a formated progress
+        string based on current iteration
+        and iterations num.
+        """
+        # getting percentage progress
+        try:
+            progress_ratio = self.current_iteration / self.iterations_num
+        except ZeroDivisionError:
+            progress_ratio = 0
+        progress_percentage = progress_ratio * 100
+
+        # rounding value for pretty print
+        progress_percentage = round(progress_percentage)
+
+        # returning progress percentage
+        return progress_percentage
+
     def get_progress_string(self) -> str:
         """
         Returns a formated progress
@@ -235,15 +321,26 @@ class ProgressTracker:
         # assembling current progress string
         progress_string = f''
 
-        # updating progress string based on attributes
-        progress_string += f'scanning files...'
-        progress_string += f' {self.wheel_symbol}'
-        progress_string += f' | files: {self.files_num}'
-        progress_string += f' | folders: {self.folders_num}'
-        progress_string += f' | scanned: {self.scanned_num}'
-        progress_string += f' | elapsed time: {self.elapsed_time_str}'
-        progress_string += f' | C: {self.cpu_usage_str}'
-        progress_string += f' | R: {self.ram_usage_str}'
+        # checking if iterations total has already been obtained
+        if not self.totals_updated.is_set():
+
+            # updating progress string based on attributes
+            progress_string += f'calculating iterations...'
+            progress_string += f' | total iterations: {self.iterations_num}'
+            progress_string += f' | elapsed time: {self.elapsed_time_str}'
+
+        # if total iterations already obtained
+        else:
+
+            # updating progress string based on attributes
+            progress_string += f'running analysis...'
+            progress_string += f' {self.wheel_symbol}'
+            progress_string += f' | iteration: {self.current_iteration}/{self.iterations_num}'
+            progress_string += f' | progress: {self.progress_percentage}'
+            progress_string += f' | elapsed time: {self.elapsed_time_str}'
+            progress_string += f' | ETC: {self.etc_str}'
+            progress_string += f' | C: {self.cpu_usage_str}'
+            progress_string += f' | R: {self.ram_usage_str}'
 
         # returning progress string
         return progress_string
@@ -253,6 +350,8 @@ class ProgressTracker:
         Updates progress string related attributes.
         """
         # updating progress percentage attributes
+        self.progress_percentage = self.get_progress_percentage()
+        self.progress_percentage_str = self.get_percentage_string(percentage=self.progress_percentage)
         self.progress_string = self.get_progress_string()
 
     def flush_progress(self) -> None:
@@ -266,104 +365,34 @@ class ProgressTracker:
         # updating progress string
         self.update_progress_string()
 
-        # checking verbose toggle
-        if self.verbose:
+        # showing progress message
+        flush_string(string=self.progress_string)
 
-            # showing progress message
-            flush_string(string=self.progress_string)
-
-    def print_tree(self) -> None:
+    def clear_progress(self) -> None:
         """
-        Prints tree on the console.
+        Given a string, writes empty space
+        to cover string size in console.
         """
-        # printing spacer
-        print()
+        # getting current progress string
+        string = self.progress_string
 
-        # printing tree
-        print(self.tree)
+        # getting string length
+        string_len = len(string)
 
-    def get_files_str(self) -> str:
-        """
-        Returns files string,
-        based on class attributes.
-        """
-        # defining placeholder value for files str
-        files_str = f'{self.files_num} file'
+        # creating empty line
+        empty_line = ' ' * string_len
 
-        # checking files count
-        if self.files_num != 1:
+        # creating backspace line
+        backspace_line = '\b' * string_len
 
-            # updating files string
-            files_str += 's'
+        # writing string
+        stdout.write(empty_line)
 
-        # returning files string
-        return files_str
+        # flushing console
+        stdout.flush()
 
-    def get_folders_str(self) -> str:
-        """
-        Returns folders string,
-        based on class attributes.
-        """
-        # defining placeholder value for folders str
-        folders_str = f'{self.folders_num} folder'
-
-        # checking folders count
-        if self.folders_num != 1:
-
-            # updating folders string
-            folders_str += 's'
-
-        # returning folders string
-        return folders_str
-
-    def get_total_sizes_str(self) -> str:
-        """
-        Returns adjusted total
-        size string.
-        """
-        # getting adjusted size
-        total_sizes_str = get_adjusted_file_size_string(file_size_in_bytes=self.total_size)
-
-        # returning total sizes str
-        return total_sizes_str
-
-    def get_summary_string(self) -> str:
-        """
-        Returns updated summary string
-        based on class attributes.
-        """
-        # defining placeholder value for summary string
-        summary_str = ''
-
-        # getting files/folders/sizes strings
-        files_str = self.get_files_str()
-        folders_str = self.get_folders_str()
-        sizes_str = self.get_total_sizes_str()
-
-        # updating summary string
-        summary_str += f'{files_str}'
-
-        # updating summary string
-        summary_str += f', {folders_str}'
-
-        if self.include_sizes:
-
-            # updating summary string
-            summary_str += f', {sizes_str}'
-
-        # returning summary string
-        return summary_str
-
-    def print_summary(self) -> None:
-        """
-        Prints summary of scanned
-        files/folders on the console.
-        """
-        # getting summary string
-        summary_str = self.get_summary_string()
-
-        # print summary string
-        print(summary_str)
+        # resetting cursor to start of the line
+        stdout.write(backspace_line)
 
     def signal_stop(self) -> None:
         """
@@ -463,6 +492,18 @@ class ProgressTracker:
         # joining threads to ensure progress thread finished cleanly
         self.progress_thread.join()
 
+    def normal_exit(self) -> None:
+        """
+        Prints process complete message
+        before terminating execution.
+        """
+        # defining final message
+        f_string = f'\n'
+        f_string += f'{self.end_string}'
+
+        # printing final message
+        print(f_string)
+
     def keyboard_interrupt_exit(self) -> None:
         """
         Prints exception message
@@ -508,6 +549,9 @@ class ProgressTracker:
         # running function in try/except block to catch breaks/errors!
         try:
 
+            # updating iterations total
+            self.update_totals(args_dict=args_dict)
+
             # resetting timer
             self.reset_timer()
 
@@ -521,11 +565,8 @@ class ProgressTracker:
             # printing final progress string
             self.flush_progress()
 
-            # printing tree
-            self.print_tree()
-
-            # printing summary string
-            self.print_summary()
+            # printing final message
+            self.normal_exit()
 
         # catching Ctrl+C events
         except KeyboardInterrupt:

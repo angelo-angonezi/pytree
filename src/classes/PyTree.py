@@ -17,7 +17,6 @@ from os.path import join
 from os.path import split
 from os.path import abspath
 from os.path import dirname
-from os.path import normpath
 from threading import Lock
 from threading import Event
 from os.path import getsize
@@ -129,17 +128,17 @@ class ModuleProgressTracker(ProgressTracker):
             # updating progress tracker attributes
             self.folders_num += 1
 
-            # getting current folder files
-            folder, _, files = item
+            # getting current folder path/subfolders/files
+            folder_path, _, files = item
 
             # getting folder is cache bool
-            folder_is_cache = is_cache(path=folder,
+            folder_is_cache = is_cache(path=folder_path,
                                        cache_folders=CACHE_FOLDERS)
 
             # checking if current folder is cache
             if folder_is_cache:
 
-                # skipping to next folder
+                # skipping cache folder
                 continue
 
             # iterating over files in folder
@@ -220,7 +219,7 @@ class PyTree:
         """
         Given a path, returns its
         depth normalized by start
-        path depth
+        path depth.
         """
         # getting current path depth
         path_depth = get_path_depth(path=path)
@@ -330,6 +329,16 @@ class PyTree:
             # getting current folder path/subfolders/files
             folder_path, subfolders, files = item
 
+            # getting folder is cache bool
+            folder_is_cache = is_cache(path=folder_path,
+                                       cache_folders=self.cache_folders)
+
+            # checking if current folder is cache
+            if folder_is_cache:
+
+                # skipping cache folder
+                continue
+
             # getting current folder split
             folder_split = split(p=folder_path)
 
@@ -359,9 +368,6 @@ class PyTree:
                 # getting current file path
                 file_path = join(folder_path,
                                  file)
-
-                # normalizing path
-                file_path = normpath(path=file_path)
 
                 # getting current file dict
                 file_dict = self.get_file_dict(file_name=file,
@@ -410,9 +416,6 @@ class PyTree:
 
                     # updating items count
                     items_count += 1
-
-            # normalizing path
-            folder_path = normpath(path=folder_path)
 
             # getting current folder dict
             folder_dict = self.get_folder_dict(folder_name=folder_name,
@@ -576,7 +579,7 @@ class PyTree:
                                          path_type=path_type)
 
             # getting path is root bool
-            path_is_root = (path == self.start_path)
+            path_is_root = (path_id == self.start_path)
 
             # checking if current path is root (first item)
             if path_is_root:
