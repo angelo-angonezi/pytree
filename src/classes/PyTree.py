@@ -155,13 +155,14 @@ class ModuleProgressTracker(ProgressTracker):
         terminating execution.
         """
         # printing spacer
-        print()
+        print('\n')
 
         # showing tree
         self.tree.show()
 
         # printing end string
-        print(self.end_string)
+        print(self.end_string,
+              end='')
 
 #####################################################################
 # PyTree definition
@@ -205,6 +206,10 @@ class PyTree:
 
         # defining base tree dict
         self.tree_dict = {}
+
+        # totals (keeping separate from ProgressTracker since it counts per subfolder)
+        self.total_folders = 0
+        self.total_files = 0
 
         # valid files
         self.valid_files = 0
@@ -325,6 +330,9 @@ class PyTree:
             # updating progress tracker attributes
             self.progress_tracker.current_folder += 1
 
+            # updating totals
+            self.total_folders += 1
+
             # getting current folder path/subfolders/files
             folder_path, subfolders, files = item
 
@@ -363,6 +371,9 @@ class PyTree:
                 # updating progress tracker attributes
                 self.progress_tracker.current_iteration += 1
                 self.progress_tracker.current_file += 1
+
+                # updating totals
+                self.total_files += 1
 
                 # checking extension toggle
                 if self.extension is not None:
@@ -683,20 +694,20 @@ class PyTree:
         if self.include_counts:
 
             # updating end string
-            end_string += f'{self.progress_tracker.folders_num} folders'
-            end_string += f', {self.progress_tracker.files_num} files'
+            end_string += f'{self.total_folders} folders'
+            end_string += f', {self.total_files} files'
 
-        # checking extension toggle
-        if self.extension is not None:
+            # checking extension toggle
+            if self.extension is not None:
 
-            # updating end string
-            end_string += f' ({self.valid_files} valid)'
+                # updating end string
+                end_string += f' ({self.valid_files} valid)'
 
-        # checking keyword toggle
-        elif self.keyword is not None:
+            # checking keyword toggle
+            elif self.keyword is not None:
 
-            # updating end string
-            end_string += f' ({self.valid_files} valid)'
+                # updating end string
+                end_string += f' ({self.valid_files} valid)'
 
         # checking include sizes toggle
         if self.include_sizes:
@@ -717,13 +728,13 @@ class PyTree:
         with specified parameters.
         """
         # updating tree dict
-        tree.update_tree_dict()
+        self.update_tree_dict()
 
         # updating tree
-        tree.update_tree()
+        self.update_tree()
 
         # updating end string
-        tree.update_end_string()
+        self.update_end_string()
 
 ######################################################################
 # end of current module
