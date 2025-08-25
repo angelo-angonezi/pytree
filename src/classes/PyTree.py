@@ -9,31 +9,18 @@
 
 # importing required libraries
 from os import walk
-from time import time
-from time import sleep
-from sys import stdout
 from treelib import Tree
 from os.path import join
 from os.path import split
 from os.path import abspath
 from os.path import dirname
-from threading import Lock
-from threading import Event
 from os.path import getsize
 from os import _exit  # noqa
-from threading import Thread
-from psutil import cpu_percent
-from psutil import virtual_memory
 from src.utils.aux_funcs import is_cache
 from src.utils.aux_funcs import get_size_str
-from src.utils.aux_funcs import flush_string
-from src.utils.aux_funcs import get_time_str
-from src.utils.global_vars import UPDATE_TIME
-from src.utils.global_vars import MEMORY_LIMIT
 from src.utils.aux_funcs import get_path_depth
 from src.utils.aux_funcs import get_start_path
 from src.utils.global_vars import CACHE_FOLDERS
-from src.utils.aux_funcs import get_number_string
 from src.classes.ProgressTracker import ProgressTracker
 
 #####################################################################
@@ -246,7 +233,7 @@ class PyTree:
 
         # assembling base path dict
         path_dict = {'name': name,
-                     'id': path_id,
+                     'path': path_id,
                      'level': path_level,
                      'parent': parent_id}
 
@@ -397,6 +384,16 @@ class PyTree:
             # iterating over current subfolders
             for subfolder in subfolders:
 
+                # getting subfolder is cache bool
+                subfolder_is_cache = is_cache(path=subfolder,
+                                              cache_folders=self.cache_folders)
+
+                # checking if current subfolder is cache
+                if subfolder_is_cache:
+
+                    # skipping cache subfolder
+                    continue
+
                 # getting current subfolder dict
                 subfolder_dict = self.tree_dict.get(subfolder)  # this will never be None due to topdown=False!
                                                                 # The subfolder will always have already been a
@@ -532,7 +529,8 @@ class PyTree:
                      tree_dict: dict,
                      ) -> Tree:
         """
-        Docstring.
+        Converts folder/file description
+        dict into a treelib.Tree object.
         """
         # defining base tree
         tree = Tree()
@@ -571,7 +569,7 @@ class PyTree:
                     continue
 
             # getting current path id/parent
-            path_id = path_dict['id']
+            path_id = path_dict['path']
             parent_id = path_dict['parent']
 
             # getting current path tag
