@@ -53,6 +53,9 @@ class ModuleProgressTracker(ProgressTracker):
         # tree
         self.tree = None
 
+        # end string
+        self.end_string = ''
+
     # overwriting class methods (using current module specific attributes)
 
     def get_progress_string(self) -> str:
@@ -157,6 +160,9 @@ class ModuleProgressTracker(ProgressTracker):
         # showing tree
         self.tree.show()
 
+        # printing end string
+        print(self.end_string)
+
 #####################################################################
 # PyTree definition
 
@@ -170,8 +176,8 @@ class PyTree:
                  dirs_only: bool,
                  include_counts: bool,
                  include_sizes: bool,
-                 extension: str,
-                 keyword: str,
+                 extension: str or None,
+                 keyword: str or None,
                  level: int,
                  cache_folders: list = CACHE_FOLDERS,
                  progress_tracker: ModuleProgressTracker = ModuleProgressTracker
@@ -199,6 +205,12 @@ class PyTree:
 
         # defining base tree dict
         self.tree_dict = {}
+
+        # valid files
+        self.valid_files = 0
+
+        # total size
+        self.total_size = 0
 
     def get_path_level(self,
                        path: str
@@ -352,6 +364,42 @@ class PyTree:
                 self.progress_tracker.current_iteration += 1
                 self.progress_tracker.current_file += 1
 
+                # checking extension toggle
+                if self.extension is not None:
+
+                    # getting file matches extension bool
+                    file_matches_extension = file.endswith(self.extension)
+
+                    # checking if current file matches extension
+                    if not file_matches_extension:
+
+                        # skipping file
+                        continue
+
+                    # checking include counts toggle
+                    if self.include_counts:
+
+                        # updating valid files count
+                        self.valid_files += 1
+
+                # checking keyword toggle
+                if self.keyword is not None:
+
+                    # getting file matches keyword bool
+                    file_matches_keyword = (self.keyword in file)
+
+                    # checking if current file matches keyword
+                    if not file_matches_keyword:
+
+                        # skipping file
+                        continue
+
+                    # checking include counts toggle
+                    if self.include_counts:
+
+                        # updating valid files count
+                        self.valid_files += 1
+
                 # getting current file path
                 file_path = join(folder_path,
                                  file)
@@ -375,6 +423,9 @@ class PyTree:
                     # updating folder size
                     folder_size += file_size
 
+                    # updating total size
+                    self.total_size += file_size
+
                 # checking include counts toggle
                 if self.include_counts:
 
@@ -384,8 +435,12 @@ class PyTree:
             # iterating over current subfolders
             for subfolder in subfolders:
 
+                # getting current subfolder path
+                subfolder_path = join(folder_path,
+                                      subfolder)
+
                 # getting subfolder is cache bool
-                subfolder_is_cache = is_cache(path=subfolder,
+                subfolder_is_cache = is_cache(path=subfolder_path,
                                               cache_folders=self.cache_folders)
 
                 # checking if current subfolder is cache
@@ -395,9 +450,9 @@ class PyTree:
                     continue
 
                 # getting current subfolder dict
-                subfolder_dict = self.tree_dict.get(subfolder)  # this will never be None due to topdown=False!
-                                                                # The subfolder will always have already been a
-                                                                # folder in previous iteration!
+                subfolder_dict = self.tree_dict.get(subfolder_path)  # this will never be None due to topdown=False!
+                                                                     # The subfolder will always have already been a
+                                                                     # folder in previous iteration!
 
                 # checking include sizes toggle
                 if self.include_sizes:
@@ -615,6 +670,60 @@ class PyTree:
 
         # updating attributes
         self.progress_tracker.tree = tree
+
+    def update_end_string(self) -> None:
+        """
+        Updates end string with folder/files
+        description summary (counts/sizes).
+        """
+        # defining placeholder value for new end string
+        end_string = ''
+
+        # checking include counts toggle
+        if self.include_counts:
+
+            # updating end string
+            end_string += f'{self.progress_tracker.folders_num} folders'
+            end_string += f', {self.progress_tracker.files_num} files'
+
+        # checking extension toggle
+        if self.extension is not None:
+
+            # updating end string
+            end_string += f' ({self.valid_files} valid)'
+
+        # checking keyword toggle
+        elif self.keyword is not None:
+
+            # updating end string
+            end_string += f' ({self.valid_files} valid)'
+
+        # checking include sizes toggle
+        if self.include_sizes:
+
+            # getting total size string
+            total_size_str = get_size_str(size_in_bytes=self.total_size)
+
+            # updating end string
+            end_string += f', {total_size_str}'
+
+        # updating progress tracker attributes
+        self.progress_tracker.end_string = end_string
+
+    def run(self):
+        """
+        Runs main PyTree methods to
+        scan folder/subfolder/files
+        with specified parameters.
+        """
+        # updating tree dict
+        tree.update_tree_dict()
+
+        # updating tree
+        tree.update_tree()
+
+        # updating end string
+        tree.update_end_string()
 
 ######################################################################
 # end of current module

@@ -1,32 +1,19 @@
-# generate objects dfs module
+# pytree module
 
 print('initializing...')  # noqa
 
-# Code destined to generating
-# per object data frame.
+# Code destined to scanning folder/subfolder/files
+# and creating tree structure to print on console.
 
 ######################################################################
 # imports
 
 # importing required libraries
 print('importing required libraries...')  # noqa
-import os
-from os import walk
-from os.path import sep
-from os.path import join
-from treelib import Tree
-from os.path import split
-from os.path import isdir
-from os.path import getsize
-from os.path import abspath
-from os.path import normpath
 from argparse import ArgumentParser
 from src.classes.PyTree import PyTree
-from src.utils.aux_funcs import is_cache
 from src.utils.aux_funcs import get_start_path
-from src.utils.global_vars import CACHE_FOLDERS
 from src.classes.PyTree import ModuleProgressTracker
-from src.classes.ProgressTracker import ProgressTracker
 print('all required libraries successfully imported.')  # noqa
 
 #####################################################################
@@ -132,11 +119,8 @@ def pytree(start_path: str,
                   level=level,
                   progress_tracker=progress_tracker)
 
-    # updating tree dict
-    tree.update_tree_dict()
-
-    # updating tree
-    tree.update_tree()
+    # running pytree main
+    tree.run()
 
 
 def parse_and_run(args_dict: dict,
@@ -161,11 +145,9 @@ def parse_and_run(args_dict: dict,
 
     # getting extension
     extension = args_dict['extension']
-    # TODO: implement the logic for this
 
     # getting keyword
     keyword = args_dict['keyword']
-    # TODO: implement the logic for this
 
     # getting level
     level = args_dict['level']
