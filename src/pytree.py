@@ -11,6 +11,8 @@ print('initializing...')  # noqa
 # importing required libraries
 print('importing required libraries...')  # noqa
 from argparse import ArgumentParser
+from .classes.PyTree import PyTree
+from .classes.ProgressTracker import ProgressTracker
 from src.classes.PyTree import PyTree
 from src.utils.aux_funcs import get_start_path
 from src.classes.PyTree import ModuleProgressTracker
