@@ -210,12 +210,10 @@ class PyTree:
         # totals (keeping separate from ProgressTracker since it counts per subfolder)
         self.total_folders = 0
         self.total_files = 0
+        self.total_size = 0
 
         # valid files
         self.valid_files = 0
-
-        # total size
-        self.total_size = 0
 
     def get_path_level(self,
                        path: str
