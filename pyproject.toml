@@ -1,17 +1,21 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=73"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytree2"
-version = "2.1.0"
-description = "A Python implementation of the Linux 'tree' command"
+version = "0.1.0"
+description = "A Python CLI utility for visualizing folder trees with sizes and counts."
 authors = [{name = "Angelo Luiz Angonezi", email = "angeloangonezi2@gmail.com"}]
 readme = "README.md"
 license = "MIT"
-license-files = "LICENSE.md"
-requires-python = ">=3.8"
+license-files = ["LICENSE.md"]
+requires-python = ">=3.9"
 dependencies = ["treelib", "psutil"]
+
+[project.urls]
+Homepage = "https://github.com/angelo-angonezi/pytree"
+Issues = "https://github.com/angelo-angonezi/pytree/issues"
 
 [project.scripts]
 pytree = "pytree:main"
