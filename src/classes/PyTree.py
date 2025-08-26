@@ -344,6 +344,10 @@ class PyTree:
                 # skipping cache folder
                 continue
 
+            # sorting subfolders/files alphabetically
+            subfolders = sorted(subfolders)
+            files = sorted(files)
+
             # getting current folder split
             folder_split = split(p=folder_path)
 
