@@ -14,7 +14,7 @@ pip install pytree2
 pytree [-h] [-d] [-s] [-c] [-x EXTENSION] [-k KEYWORD] [-l LEVEL] [start_path ...]
 ```
 
-```shell
+```
 pytree - a python cli utility for visualizing folder trees with sizes and counts
 
 positional arguments:
@@ -37,10 +37,10 @@ optional arguments:
 
 #### Basic usage
 ```shell
-$pytree test_folder
+pytree test_folder
 ```
 
-```shell
+```
 test_folder
 ├── another_folder
 │   ├── empty_folder
@@ -58,10 +58,10 @@ test_folder
 By concatenating the optional arguments, you can get a clear view of the folder structure.
 Additionally, pytree will print a summary line in the end, with the folder/file count and total size.
 ```shell
-$pytree test_folder -dcs
+pytree test_folder -dcs
 ```
 
-```shell
+```
 test_folder [2] (13 mb)
 ├── another_folder [2] (1 mb)
 │   └── empty_folder [0] (0 bytes)
@@ -74,10 +74,10 @@ test_folder [2] (13 mb)
 #### Specifying extension/keyword
 You can also specify a search keyword (by passing **-x** your_extension) or keyword (by passing **-k** your_keyword), e.g:
 ```shell
-$pytree test_folder -cs -x .pdf
+pytree test_folder -cs -x .pdf
 ```
 
-```shell
+```
 test_folder [2] (136 bytes)
 ├── another_folder [1] (0 bytes)
 │   └── empty_folder [0] (0 bytes)
