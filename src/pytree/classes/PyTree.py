@@ -620,6 +620,7 @@ class PyTree:
             # checking apply level filter
             if self.apply_level_filter:
 
+                # checking if current level is above max
                 if path_level > self.level:
 
                     # skipping path

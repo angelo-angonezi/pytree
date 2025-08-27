@@ -7,7 +7,6 @@
 # defining global variables
 
 UPDATE_TIME = 0.1
-MEMORY_LIMIT = 85
 ONE_BYTE = 1
 MULTIPLIER = 1024
 ONE_KB = ONE_BYTE * MULTIPLIER

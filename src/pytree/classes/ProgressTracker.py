@@ -18,7 +18,6 @@ from threading import Thread
 from pytree.utils.aux_funcs import flush_string
 from pytree.utils.aux_funcs import get_time_str
 from pytree.utils.global_vars import UPDATE_TIME
-from pytree.utils.global_vars import MEMORY_LIMIT
 from pytree.utils.aux_funcs import get_number_string
 
 #####################################################################
@@ -378,25 +377,6 @@ class ProgressTracker:
         # quitting code
         self.force_quit()
 
-    def check_ram_usage(self) -> None:
-        """
-        Checks whether ram usage is above
-        a given threshold (in percentage),
-        signaling stop should it be above.
-        """
-        # getting high ram usage bool
-        high_ram_usage = self.ram_usage > MEMORY_LIMIT
-
-        # checking if ram usage is high
-        if high_ram_usage:
-
-            # printing execution message
-            e_string = f'Memory usage above {MEMORY_LIMIT}%\n'
-            e_string += f'Breaking code to avoid system crash.'
-
-            # calling specific exit --> quits all running threads
-            self.exit(message=e_string)
-
     def update_progress(self) -> None:
         """
         Runs progress tracking loop, updating
@@ -411,12 +391,6 @@ class ProgressTracker:
 
                 # updating time attributes
                 self.update_time_attributes()
-
-                # updating system usage attributes
-                self.update_system_attributes()
-
-                # checking memory usage
-                self.check_ram_usage()
 
                 # printing progress
                 self.flush_progress()
