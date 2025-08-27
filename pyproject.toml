@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytree2"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Python CLI utility for visualizing folder trees with sizes and counts."
 authors = [{name = "Angelo Luiz Angonezi", email = "angeloangonezi2@gmail.com"}]
 readme = "README.md"
@@ -18,7 +18,7 @@ Homepage = "https://github.com/angelo-angonezi/pytree"
 Issues = "https://github.com/angelo-angonezi/pytree/issues"
 
 [project.scripts]
-pytree = "pytree:main"
+pytree = "pytree.main:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

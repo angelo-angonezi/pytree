@@ -17,11 +17,11 @@ from os import _exit  # noqa
 from threading import Thread
 from psutil import cpu_percent
 from psutil import virtual_memory
-from utils.aux_funcs import flush_string
-from utils.aux_funcs import get_time_str
-from utils.global_vars import UPDATE_TIME
-from utils.global_vars import MEMORY_LIMIT
-from utils.aux_funcs import get_number_string
+from pytree.utils.aux_funcs import flush_string
+from pytree.utils.aux_funcs import get_time_str
+from pytree.utils.global_vars import UPDATE_TIME
+from pytree.utils.global_vars import MEMORY_LIMIT
+from pytree.utils.aux_funcs import get_number_string
 
 #####################################################################
 # ProgressTracker definition

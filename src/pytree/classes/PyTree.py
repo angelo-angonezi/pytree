@@ -16,12 +16,12 @@ from os.path import abspath
 from os.path import dirname
 from os.path import getsize
 from os import _exit  # noqa
-from utils.aux_funcs import is_cache
-from utils.aux_funcs import get_size_str
-from utils.aux_funcs import get_path_depth
-from utils.aux_funcs import get_start_path
-from utils.global_vars import CACHE_FOLDERS
-from classes.ProgressTracker import ProgressTracker
+from pytree.utils.aux_funcs import is_cache
+from pytree.utils.aux_funcs import get_size_str
+from pytree.utils.aux_funcs import get_path_depth
+from pytree.utils.aux_funcs import get_start_path
+from pytree.utils.global_vars import CACHE_FOLDERS
+from pytree.classes.ProgressTracker import ProgressTracker
 
 #####################################################################
 # progress tracking related functions

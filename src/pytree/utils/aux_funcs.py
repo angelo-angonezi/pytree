@@ -11,10 +11,10 @@ from sys import stdout
 from os.path import sep
 from os.path import abspath
 from os import get_terminal_size
-from utils.global_vars import ONE_KB
-from utils.global_vars import ONE_MB
-from utils.global_vars import ONE_GB
-from utils.global_vars import ONE_TB
+from pytree.utils.global_vars import ONE_KB
+from pytree.utils.global_vars import ONE_MB
+from pytree.utils.global_vars import ONE_GB
+from pytree.utils.global_vars import ONE_TB
 
 ######################################################################
 # defining auxiliary functions

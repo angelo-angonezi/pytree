@@ -1,4 +1,4 @@
-# pytree module
+# pytree main module
 
 print('initializing...')  # noqa
 
@@ -10,10 +10,10 @@ print('initializing...')  # noqa
 
 # importing required libraries
 print('importing required libraries...')  # noqa
-from classes.PyTree import PyTree
 from argparse import ArgumentParser
-from utils.aux_funcs import get_start_path
-from classes.PyTree import ModuleProgressTracker
+from pytree.classes.PyTree import PyTree
+from pytree.utils.aux_funcs import get_start_path
+from pytree.classes.PyTree import ModuleProgressTracker
 print('all required libraries successfully imported.')  # noqa
 
 #####################################################################
@@ -26,7 +26,7 @@ def get_args_dict() -> dict:
     :return: Dictionary. Represents the parsed arguments.
     """
     # defining program description
-    description = "pytree - a python cli utility for visualizing folder/files trees with file sizes and counts"
+    description = "pytree - a python cli utility for visualizing folder trees with sizes and counts"
 
     # creating a parser instance
     parser = ArgumentParser(description=description)
