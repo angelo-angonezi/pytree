@@ -83,7 +83,7 @@ def get_args_dict() -> dict:
                         dest='level',
                         required=False,
                         type=int or None,
-                        help="defines tree's depth (until which subfolder tree will be created) [0=current, -1=all]",
+                        help="defines tree's depth (until which subfolder tree will be created) [0=start_path, -1=all]",
                         default=-1)
 
     # creating arguments dictionary
