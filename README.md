@@ -3,7 +3,7 @@ A Python CLI utility for visualizing folder trees with sizes and counts.
 
 ## Installation
 
-pytree requires **Python version 3.9+** in order to run. You can install pytree in your Python environment with the command:
+pytree requires **Python version 3.8+** in order to run. You can install pytree in your Python environment with the command:
 ```shell
 pip install pytree2
 ```
