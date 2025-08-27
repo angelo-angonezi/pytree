@@ -10,7 +10,7 @@ authors = [{name = "Angelo Luiz Angonezi", email = "angeloangonezi2@gmail.com"}]
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE.md"]
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 dependencies = ["treelib"]
 keywords = ["python", "cli", "tree", "folder structure", "file size", "disk usage"]
 
