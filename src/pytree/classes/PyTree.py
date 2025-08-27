@@ -91,8 +91,6 @@ class ModuleProgressTracker(ProgressTracker):
             progress_string += f' | progress: {self.progress_percentage_str}'
             progress_string += f' | elapsed time: {self.elapsed_time_str}'
             progress_string += f' | ETC: {self.etc_str}'
-            # progress_string += f' | C: {self.cpu_usage_str}'
-            # progress_string += f' | R: {self.ram_usage_str}'
 
         # returning progress string
         return progress_string

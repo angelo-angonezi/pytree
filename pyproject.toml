@@ -11,7 +11,7 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE.md"]
 requires-python = ">=3.9"
-dependencies = ["treelib", "psutil"]
+dependencies = ["treelib"]
 
 [project.urls]
 Homepage = "https://github.com/angelo-angonezi/pytree"

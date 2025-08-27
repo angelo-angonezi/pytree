@@ -15,8 +15,6 @@ from threading import Lock
 from threading import Event
 from os import _exit  # noqa
 from threading import Thread
-from psutil import cpu_percent
-from psutil import virtual_memory
 from pytree.utils.aux_funcs import flush_string
 from pytree.utils.aux_funcs import get_time_str
 from pytree.utils.global_vars import UPDATE_TIME
@@ -37,12 +35,6 @@ class ProgressTracker:
         and defines class attributes.
         """
         # defining class attributes (shared by all subclasses)
-
-        # system
-        self.cpu_usage = self.get_cpu_usage()
-        self.cpu_usage_str = ''
-        self.ram_usage = self.get_ram_usage()
-        self.ram_usage_str = ''
 
         # time
         self.start_time = self.get_current_time()
@@ -225,39 +217,6 @@ class ProgressTracker:
         self.etc_str = get_time_str(time_in_seconds=self.etc)
 
     @staticmethod
-    def get_cpu_usage() -> int:
-        """
-        Returns cpu usage in round
-        percentage value.
-        """
-        # getting cpu usage
-        cpu_usage = cpu_percent()
-
-        # rounding usage
-        cpu_usage = round(cpu_usage)
-
-        # returning cpu usage
-        return cpu_usage
-
-    @staticmethod
-    def get_ram_usage() -> int:
-        """
-        Returns ram usage in round
-        percentage value.
-        """
-        # getting ram usage
-        ram_usage = virtual_memory()
-
-        # converting value to percentage
-        ram_usage = ram_usage.percent
-
-        # rounding usage
-        ram_usage = round(ram_usage)
-
-        # returning ram usage
-        return ram_usage
-
-    @staticmethod
     def get_percentage_string(percentage: int) -> str:
         """
         Given a value in percentage,
@@ -279,16 +238,6 @@ class ProgressTracker:
 
         # returning percentage string
         return percentage_string
-
-    def update_system_attributes(self) -> None:
-        """
-        Updates system related attributes.
-        """
-        # updating system usage attributes
-        self.cpu_usage = self.get_cpu_usage()
-        self.cpu_usage_str = self.get_percentage_string(percentage=self.cpu_usage)
-        self.ram_usage = self.get_ram_usage()
-        self.ram_usage_str = self.get_percentage_string(percentage=self.ram_usage)
 
     def get_progress_percentage(self) -> int:
         """
@@ -339,8 +288,6 @@ class ProgressTracker:
             progress_string += f' | progress: {self.progress_percentage}'
             progress_string += f' | elapsed time: {self.elapsed_time_str}'
             progress_string += f' | ETC: {self.etc_str}'
-            progress_string += f' | C: {self.cpu_usage_str}'
-            progress_string += f' | R: {self.ram_usage_str}'
 
         # returning progress string
         return progress_string
