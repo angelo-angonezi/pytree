@@ -363,6 +363,8 @@ class PyTree:
             folder_name = folder_split[-1]
 
             # defining placeholder value for current folder size/count
+            # TODO: convert this to class attributes
+            #  (update this function to smaller functions, which update/reset these attributes)
             folder_size = 0
             items_count = 0
 
