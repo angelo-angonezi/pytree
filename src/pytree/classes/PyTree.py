@@ -327,24 +327,30 @@ class PyTree:
             # getting current folder path/subfolders/files
             folder_path, subfolders, files = item
 
-            # getting folder is symlink bool
-            folder_is_symlink = islink(path=folder_path)
+            # getting path is root bool
+            path_is_root = (folder_path == self.start_path)
 
-            # checking if current folder is symlink
-            if folder_is_symlink:
+            # checking if current path is root
+            if not path_is_root:
 
-                # skipping symlink folder
-                continue
+                # getting folder is symlink bool
+                folder_is_symlink = islink(path=folder_path)
 
-            # getting folder is cache bool
-            folder_is_cache = is_cache(path=folder_path,
-                                       cache_folders=self.cache_folders)
+                # checking if current folder is symlink
+                if folder_is_symlink:
 
-            # checking if current folder is cache
-            if folder_is_cache:
+                    # skipping symlink folder
+                    continue
 
-                # skipping cache folder
-                continue
+                # getting folder is cache bool
+                folder_is_cache = is_cache(path=folder_path,
+                                           cache_folders=self.cache_folders)
+
+                # checking if current folder is cache
+                if folder_is_cache:
+
+                    # skipping cache folder
+                    continue
 
             # updating progress tracker attributes
             self.progress_tracker.current_folder += 1
