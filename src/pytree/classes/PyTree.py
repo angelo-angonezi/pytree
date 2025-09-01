@@ -114,9 +114,6 @@ class ModuleProgressTracker(ProgressTracker):
         # iterating over folders/subfolders/files
         for item in folders_subfolders_files:
 
-            # updating progress tracker attributes
-            self.folders_num += 1
-
             # getting current folder path/subfolders/files
             folder_path, _, files = item
 
@@ -129,6 +126,9 @@ class ModuleProgressTracker(ProgressTracker):
 
                 # skipping cache folder
                 continue
+
+            # updating progress tracker attributes
+            self.folders_num += 1
 
             # iterating over files in folder
             for _ in files:
@@ -324,12 +324,6 @@ class PyTree:
         # iterating over folders/subfolders/files
         for item in folders_subfolders_files:
 
-            # updating progress tracker attributes
-            self.progress_tracker.current_folder += 1
-
-            # updating totals
-            self.total_folders += 1
-
             # getting current folder path/subfolders/files
             folder_path, subfolders, files = item
 
@@ -351,6 +345,12 @@ class PyTree:
 
                 # skipping cache folder
                 continue
+
+            # updating progress tracker attributes
+            self.progress_tracker.current_folder += 1
+
+            # updating totals
+            self.total_folders += 1
 
             # sorting subfolders/files alphabetically
             subfolders = sorted(subfolders)
