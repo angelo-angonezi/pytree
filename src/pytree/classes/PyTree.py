@@ -117,15 +117,30 @@ class ModuleProgressTracker(ProgressTracker):
             # getting current folder path/subfolders/files
             folder_path, _, files = item
 
-            # getting folder is cache bool
-            folder_is_cache = is_cache(path=folder_path,
-                                       cache_folders=CACHE_FOLDERS)
+            # getting path is root bool
+            path_is_root = (folder_path == start_path)
 
-            # checking if current folder is cache
-            if folder_is_cache:
+            # checking if current path is root
+            if not path_is_root:
 
-                # skipping cache folder
-                continue
+                # getting folder is symlink bool
+                folder_is_symlink = islink(path=folder_path)
+
+                # checking if current folder is symlink
+                if folder_is_symlink:
+
+                    # skipping symlink folder
+                    continue
+
+                # getting folder is cache bool
+                folder_is_cache = is_cache(path=folder_path,
+                                           cache_folders=CACHE_FOLDERS)
+
+                # checking if current folder is cache
+                if folder_is_cache:
+
+                    # skipping cache folder
+                    continue
 
             # updating progress tracker attributes
             self.folders_num += 1

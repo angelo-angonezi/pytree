@@ -16,6 +16,7 @@ ONE_TB = ONE_GB * MULTIPLIER
 CACHE_FOLDERS = ['__pycache__',
                  '.git',
                  '.idea',
+                 '.cache',
                  'egg-info']
 
 ######################################################################
