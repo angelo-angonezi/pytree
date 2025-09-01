@@ -12,6 +12,7 @@ from os import walk
 from treelib import Tree
 from os.path import join
 from os.path import split
+from os.path import islink
 from os.path import abspath
 from os.path import dirname
 from os.path import getsize
@@ -332,6 +333,15 @@ class PyTree:
             # getting current folder path/subfolders/files
             folder_path, subfolders, files = item
 
+            # getting folder is symlink bool
+            folder_is_symlink = islink(path=folder_path)
+
+            # checking if current folder is symlink
+            if folder_is_symlink:
+
+                # skipping symlink folder
+                continue
+
             # getting folder is cache bool
             folder_is_cache = is_cache(path=folder_path,
                                        cache_folders=self.cache_folders)
@@ -449,6 +459,15 @@ class PyTree:
                 # getting current subfolder path
                 subfolder_path = join(folder_path,
                                       subfolder)
+
+                # getting subfolder is symlink bool
+                subfolder_is_symlink = islink(path=subfolder_path)
+
+                # checking if current subfolder is symlink
+                if subfolder_is_symlink:
+
+                    # skipping symlink subfolder
+                    continue
 
                 # getting subfolder is cache bool
                 subfolder_is_cache = is_cache(path=subfolder_path,
