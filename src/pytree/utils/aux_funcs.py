@@ -135,6 +135,21 @@ def get_time_str(time_in_seconds: int) -> str:
     return time_string
 
 
+def get_path_name(path: str) -> str:
+    """
+    Given a full path, returns its
+    name (final split item).
+    """
+    # getting path split
+    path_split = get_path_split(path=path)
+
+    # getting path name
+    path_name = path_split[-1]
+
+    # returning path name
+    return path_name
+
+
 def is_cache(path: str,
              cache_folders: list
              ) -> bool:

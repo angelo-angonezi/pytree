@@ -16,8 +16,7 @@ from os.path import abspath
 from os.path import dirname
 from os.path import getsize
 from os import _exit  # noqa
-from pytree.utils.aux_funcs import is_cache
-from pytree.utils.aux_funcs import reverse_dict
+from pytree.utils.aux_funcs import reverse_dict, get_path_name
 from pytree.utils.aux_funcs import get_size_str
 from pytree.utils.aux_funcs import get_skip_bool
 from pytree.utils.aux_funcs import get_path_depth
@@ -362,11 +361,8 @@ class PyTree:
             subfolders = sorted(subfolders)
             files = sorted(files)
 
-            # getting current folder split
-            folder_split = split(p=folder_path)
-
             # getting current folder name
-            folder_name = folder_split[-1]
+            folder_name = get_path_name(path=folder_path)
 
             # getting current files num
             files_num = len(files)
@@ -380,7 +376,7 @@ class PyTree:
             self.current_items_count = 0
 
             # iterating over current files
-            for file in files:
+            for file_name in files:
 
                 # updating progress tracker attributes
                 self.progress_tracker.current_iteration += 1
@@ -393,7 +389,7 @@ class PyTree:
                 if self.extension is not None:
 
                     # getting file matches extension bool
-                    file_matches_extension = file.endswith(self.extension)
+                    file_matches_extension = file_name.endswith(self.extension)
 
                     # checking if current file matches extension
                     if not file_matches_extension:
@@ -411,7 +407,7 @@ class PyTree:
                 if self.keyword is not None:
 
                     # getting file matches keyword bool
-                    file_matches_keyword = (self.keyword in file)
+                    file_matches_keyword = (self.keyword in file_name)
 
                     # checking if current file matches keyword
                     if not file_matches_keyword:
@@ -427,10 +423,10 @@ class PyTree:
 
                 # getting current file path
                 file_path = join(folder_path,
-                                 file)
+                                 file_name)
 
                 # getting current file dict
-                file_dict = self.get_file_dict(file_name=file,
+                file_dict = self.get_file_dict(file_name=file_name,
                                                file_path=file_path)
 
                 # assembling path dict
@@ -458,11 +454,11 @@ class PyTree:
                     self.current_items_count += 1
 
             # iterating over current subfolders
-            for subfolder in subfolders:
+            for subfolder_name in subfolders:
 
                 # getting current subfolder path
                 subfolder_path = join(folder_path,
-                                      subfolder)
+                                      subfolder_name)
 
                 # getting skip folder bool
                 skip_folder = get_skip_bool(folder_path=subfolder_path,
