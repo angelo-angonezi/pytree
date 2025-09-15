@@ -20,7 +20,7 @@ Issues = "https://github.com/angelo-angonezi/pytree/issues"
 
 [project.scripts]
 pytree = "pytree.main:main"
-pytree-loc = "pytree.main:main_loc"
+pytree-loc = "pytree.main_loc:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

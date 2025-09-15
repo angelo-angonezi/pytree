@@ -17,12 +17,14 @@ from os.path import getsize
 from os import _exit  # noqa
 from pytree.utils.aux_funcs import get_loc
 from pytree.utils.aux_funcs import is_cache
+from pytree.utils.aux_funcs import get_loc_str
 from pytree.utils.aux_funcs import reverse_dict
 from pytree.utils.aux_funcs import get_size_str
-from pytree.utils.aux_funcs import get_skip_bool
+from pytree.utils.aux_funcs import get_skip_file
 from pytree.utils.aux_funcs import get_path_name
 from pytree.utils.aux_funcs import get_path_depth
 from pytree.utils.aux_funcs import get_start_path
+from pytree.utils.aux_funcs import get_skip_folder
 from pytree.utils.global_vars import CACHE_FOLDERS
 from pytree.classes.ProgressTracker import ProgressTracker
 
@@ -124,10 +126,10 @@ class ModuleProgressTracker(ProgressTracker):
             folder_path, _, files = item
 
             # getting skip folder bool
-            skip_folder = get_skip_bool(folder_path=folder_path,
-                                        start_path=start_path,
-                                        start_is_cache=start_is_cache,
-                                        cache_folders=CACHE_FOLDERS)
+            skip_folder = get_skip_folder(folder_path=folder_path,
+                                          start_path=start_path,
+                                          start_is_cache=start_is_cache,
+                                          cache_folders=CACHE_FOLDERS)
 
             # checking whether to skip current folder
             if skip_folder:
@@ -350,18 +352,187 @@ class PyTree:
         return base_dict
 
     def scan_file(self,
+                  file_name: str,
                   file_path: str
                   ) -> None:
-        pass
+        """
+        Given a file name/path updates tree
+        dict accordingly.
+        """
+        # getting current file dict
+        file_dict = self.get_file_dict(file_name=file_name,
+                                       file_path=file_path)
+
+        # assembling path dict
+        path_dict = {file_path: file_dict}
+
+        # updating tree dict
+        self.tree_dict.update(path_dict)
+
+        # checking include sizes toggle
+        if self.include_sizes:
+
+            # getting file size
+            file_size = file_dict['size']
+
+            # updating folder size
+            self.current_folder_size += file_size
+
+            # updating total size
+            self.total_size += file_size
+
+        # checking include counts toggle
+        if self.include_counts:
+
+            # updating items count
+            self.current_items_count += 1
+            self.valid_files += 1
+
+        # checking mode
+        if self.mode_is_loc:
+
+            # getting file loc
+            file_loc = file_dict['loc']
+
+            # updating folder loc
+            self.current_folder_loc += file_loc
+
+            # updating total loc
+            self.total_loc += file_loc
+
+    def scan_subfolder(self,
+                       subfolder_path: str
+                       ) -> None:
+        """
+        Given a folder path and respective
+        subfolder/files lists, updates tree
+        dict accordingly.
+        """
+        # getting current subfolder dict
+        subfolder_dict = self.tree_dict.get(subfolder_path)  # this will never be None due to topdown=False!
+                                                             # The subfolder will always have already been a
+                                                             # folder in a previous iteration!
+
+        # checking include sizes toggle
+        if self.include_sizes:
+
+            # getting file size
+            subfolder_size = subfolder_dict['size']
+
+            # updating folder size
+            self.current_folder_size += subfolder_size
+
+        # checking include counts toggle
+        if self.include_counts:
+
+            # updating items count
+            self.current_items_count += 1
+
+        # checking mode
+        if self.mode_is_loc:
+
+            # getting file loc
+            subfolder_loc = subfolder_dict['loc']
+
+            # updating folder loc
+            self.current_folder_loc += subfolder_loc
+
 
     def scan_folder(self,
-                    folder_path: str
+                    folder_path: str,
+                    subfolders: list,
+                    files: list
                     ) -> None:
-        pass
+        """
+        Given a folder path and respective
+        subfolder/files lists, updates tree
+        dict accordingly.
+        """
+        # sorting subfolders/files alphabetically
+        subfolders = sorted(subfolders)
+        files = sorted(files)
+
+        # getting current folder name
+        folder_name = get_path_name(path=folder_path)
+
+        # getting current files num
+        files_num = len(files)
+
+        # updating progress tracker attributes
+        self.progress_tracker.files_num = files_num
+
+        # resetting progress tracker attributes
+        self.progress_tracker.current_file = 0
+        self.current_folder_size = 0
+        self.current_items_count = 0
+
+        # iterating over current files
+        for file_name in files:
+
+            # updating progress tracker attributes
+            self.progress_tracker.current_iteration += 1
+            self.progress_tracker.current_file += 1
+
+            # updating totals
+            self.total_files += 1
+
+            # getting skip file bool
+            skip_file = get_skip_file(file_name=file_name,
+                                      extension=self.extension,
+                                      keyword=self.keyword)
+
+            # checking whether to skip current file
+            if skip_file:
+
+                # skipping current file
+                continue
+
+            # getting current file path
+            file_path = join(folder_path,
+                             file_name)
+
+            # scanning current file
+            self.scan_file(file_name=file_name,
+                           file_path=file_path)
+
+        # iterating over current subfolders
+        for subfolder_name in subfolders:
+
+            # getting current subfolder path
+            subfolder_path = join(folder_path,
+                                  subfolder_name)
+
+            # getting skip folder bool
+            skip_folder = get_skip_folder(folder_path=subfolder_path,
+                                          start_path=self.start_path,
+                                          start_is_cache=self.start_is_cache,
+                                          cache_folders=self.cache_folders)
+
+            # checking whether to skip current folder
+            if skip_folder:
+
+                # skipping current folder
+                continue
+
+            # scanning current subfolder
+            self.scan_subfolder(subfolder_path=subfolder_path)
+
+        # getting current folder dict
+        folder_dict = self.get_folder_dict(folder_name=folder_name,
+                                           folder_path=folder_path)
+
+        # assembling path dict
+        path_dict = {folder_path: folder_dict}
+
+        # updating tree dict
+        self.tree_dict.update(path_dict)
 
     def get_tree_dict(self) -> dict:
         """
-        Docstring.
+        Scans start path for subfolders/files
+        and returns dictionary of tree structure,
+        containing sizes/counts/loc info, according
+        to specified parameters.
         """
         # getting folders/subfolders/files in start path
         folders_subfolders_files = walk(self.start_path,
@@ -374,10 +545,10 @@ class PyTree:
             folder_path, subfolders, files = item
 
             # getting skip folder bool
-            skip_folder = get_skip_bool(folder_path=folder_path,
-                                        start_path=self.start_path,
-                                        start_is_cache=self.start_is_cache,
-                                        cache_folders=self.cache_folders)
+            skip_folder = get_skip_folder(folder_path=folder_path,
+                                          start_path=self.start_path,
+                                          start_is_cache=self.start_is_cache,
+                                          cache_folders=self.cache_folders)
 
             # checking whether to skip current folder
             if skip_folder:
@@ -391,171 +562,10 @@ class PyTree:
             # updating totals
             self.total_folders += 1
 
-            # sorting subfolders/files alphabetically
-            subfolders = sorted(subfolders)
-            files = sorted(files)
-
-            # getting current folder name
-            folder_name = get_path_name(path=folder_path)
-
-            # getting current files num
-            files_num = len(files)
-
-            # updating progress tracker attributes
-            self.progress_tracker.files_num = files_num
-
-            # resetting progress tracker attributes
-            self.progress_tracker.current_file = 0
-            self.current_folder_size = 0
-            self.current_items_count = 0
-
-            # iterating over current files
-            for file_name in files:
-
-                # updating progress tracker attributes
-                self.progress_tracker.current_iteration += 1
-                self.progress_tracker.current_file += 1
-
-                # updating totals
-                self.total_files += 1
-
-                # checking extension toggle
-                if self.extension is not None:
-
-                    # getting file matches extension bool
-                    file_matches_extension = file_name.endswith(self.extension)
-
-                    # checking if current file matches extension
-                    if not file_matches_extension:
-
-                        # skipping file
-                        continue
-
-                    # checking include counts toggle
-                    if self.include_counts:
-
-                        # updating valid files count
-                        self.valid_files += 1
-
-                # checking keyword toggle
-                if self.keyword is not None:
-
-                    # getting file matches keyword bool
-                    file_matches_keyword = (self.keyword in file_name)
-
-                    # checking if current file matches keyword
-                    if not file_matches_keyword:
-
-                        # skipping file
-                        continue
-
-                    # checking include counts toggle
-                    if self.include_counts:
-
-                        # updating valid files count
-                        self.valid_files += 1
-
-                # getting current file path
-                file_path = join(folder_path,
-                                 file_name)
-
-                # getting current file dict
-                file_dict = self.get_file_dict(file_name=file_name,
-                                               file_path=file_path)
-
-                # assembling path dict
-                path_dict = {file_path: file_dict}
-
-                # updating tree dict
-                self.tree_dict.update(path_dict)
-
-                # checking include sizes toggle
-                if self.include_sizes:
-
-                    # getting file size
-                    file_size = file_dict['size']
-
-                    # updating folder size
-                    self.current_folder_size += file_size
-
-                    # updating total size
-                    self.total_size += file_size
-
-                # checking include counts toggle
-                if self.include_counts:
-
-                    # updating items count
-                    self.current_items_count += 1
-
-                # checking mode
-                if self.mode_is_loc:
-
-                    # getting file loc
-                    file_loc = file_dict['loc']
-
-                    # updating folder loc
-                    self.current_folder_loc += file_loc
-
-                    # updating total loc
-                    self.total_loc += file_loc
-
-            # iterating over current subfolders
-            for subfolder_name in subfolders:
-
-                # getting current subfolder path
-                subfolder_path = join(folder_path,
-                                      subfolder_name)
-
-                # getting skip folder bool
-                skip_folder = get_skip_bool(folder_path=subfolder_path,
-                                            start_path=self.start_path,
-                                            start_is_cache=self.start_is_cache,
-                                            cache_folders=self.cache_folders)
-
-                # checking whether to skip current folder
-                if skip_folder:
-
-                    # skipping current folder
-                    continue
-
-                # getting current subfolder dict
-                subfolder_dict = self.tree_dict.get(subfolder_path)  # this will never be None due to topdown=False!
-                                                                     # The subfolder will always have already been a
-                                                                     # folder in a previous iteration!
-
-                # checking include sizes toggle
-                if self.include_sizes:
-
-                    # getting file size
-                    subfolder_size = subfolder_dict['size']
-
-                    # updating folder size
-                    self.current_folder_size += subfolder_size
-
-                # checking include counts toggle
-                if self.include_counts:
-
-                    # updating items count
-                    self.current_items_count += 1
-
-                # checking mode
-                if self.mode_is_loc:
-
-                    # getting file loc
-                    subfolder_loc = subfolder_dict['loc']
-
-                    # updating folder loc
-                    self.current_folder_loc += subfolder_loc
-
-            # getting current folder dict
-            folder_dict = self.get_folder_dict(folder_name=folder_name,
-                                               folder_path=folder_path)
-
-            # assembling path dict
-            path_dict = {folder_path: folder_dict}
-
-            # updating tree dict
-            self.tree_dict.update(path_dict)
+            # scanning current folder
+            self.scan_folder(folder_path=folder_path,
+                             subfolders=subfolders,
+                             files=files)
 
         # reversing dict (required since topdown was set to False in os.walk to enable size obtaining optimization)
         tree_dict = reverse_dict(a_dict=self.tree_dict)
@@ -588,6 +598,18 @@ class PyTree:
 
             # updating file tag
             file_tag += f' ({size_str})'
+
+        # checking mode
+        if self.mode_is_loc:
+
+            # getting additional path dict info
+            file_loc = path_dict['loc']
+
+            # getting loc string
+            loc_str = get_loc_str(loc=file_loc)
+
+            # updating file tag
+            file_tag += f' {{{loc_str}}}'
 
         # returning file tag
         return file_tag
@@ -783,6 +805,15 @@ class PyTree:
 
             # updating end string
             end_string += f', {total_size_str}'
+
+        # checking mode
+        if self.mode_is_loc:
+
+            # getting total loc string
+            total_loc_str = get_loc_str(loc=self.total_loc)
+
+            # updating end string
+            end_string += f', {total_loc_str}'
 
         # updating progress tracker attributes
         self.progress_tracker.end_string = end_string

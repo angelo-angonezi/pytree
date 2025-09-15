@@ -189,11 +189,11 @@ def get_start_path(start_path: str or list) -> str:
     return start_path
 
 
-def get_skip_bool(folder_path: str,
-                  start_path: str,
-                  start_is_cache: bool,
-                  cache_folders: list
-                  ) -> bool:
+def get_skip_folder(folder_path: str,
+                    start_path: str,
+                    start_is_cache: bool,
+                    cache_folders: list
+                    ) -> bool:
     """
     Given a path to a folder, returns
     True if folder should be skipped,
@@ -224,11 +224,52 @@ def get_skip_bool(folder_path: str,
             # appending current condition to skip conditions list
             skip_conditions.append(folder_is_cache)
 
-    # updating skip bool
+    # getting skip bool
     skip_bool = any(skip_conditions)
 
     # returning skip bool
     return skip_bool
+
+
+def get_skip_file(file_name: str,
+                  extension: str or None,
+                  keyword: str or None
+                  ) -> bool:
+    """
+    Given a file name, returns True
+    if file should be skipped, and
+    False otherwise.
+    """
+    # defining placeholder value for skip conditions list
+    skip_conditions = []
+
+    # checking extension toggle
+    if extension is not None:
+
+        # getting file matches extension bool
+        file_matches_extension = file_name.endswith(extension)
+
+        # appending current condition to skip conditions list
+        skip_conditions.append(file_matches_extension)
+
+    # checking keyword toggle
+    if keyword is not None:
+
+        # getting file matches keyword bool
+        file_matches_keyword = (keyword in file_name)
+
+        # appending current condition to skip conditions list
+        skip_conditions.append(file_matches_keyword)
+
+    # reversing condition bools (skip should happen if they DON'T match)
+    skip_conditions = [(not condition) for condition in skip_conditions]
+
+    # getting skip bool
+    skip_bool = any(skip_conditions)
+
+    # returning skip bool
+    return skip_bool
+
 
 def get_path_split(path: str) -> list:
     """
@@ -313,7 +354,47 @@ def get_loc(file_path: str) -> int:
     returns number of lines of code
     (disconsidering comments and enters)
     """
-    raise NotImplementedError
+    # defining placeholder value for lines of code (loc)
+    loc = 0
+
+    # defining read mode
+    read_mode = 'r'
+
+    # reading file
+    with open(file_path, read_mode) as open_file:
+
+        # getting file lines
+        lines = open_file.readlines()
+
+        # iterating over lines
+        for line in lines:
+
+            # getting line is comment bool
+            line_is_comment = line.startswith('#')
+
+            # checking if current line is comment
+            if line_is_comment:
+
+                # skipping current line
+                continue
+
+            # updating lines of code count
+            loc += 1
+
+    # returning lines of code count
+    return loc
+
+
+def get_loc_str(loc: int) -> str:
+    """
+    Given a file/folder lines of code
+    count, returns its formatted string.
+    """
+    # assembling loc string
+    loc_str = f'{loc} lines'
+
+    # returning loc string
+    return loc_str
 
 
 def reverse_dict(a_dict: dict) -> dict:
