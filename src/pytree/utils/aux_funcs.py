@@ -307,6 +307,15 @@ def get_size_str(size_in_bytes: int) -> str:
     return size_str
 
 
+def get_loc(file_path: str) -> int:
+    """
+    Given a path to a python file,
+    returns number of lines of code
+    (disconsidering comments and enters)
+    """
+    raise NotImplementedError
+
+
 def reverse_dict(a_dict: dict) -> dict:
     """
     Given a dictionary, returns

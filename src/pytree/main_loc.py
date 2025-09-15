@@ -1,9 +1,10 @@
-# pytree main module
+# pytree main loc module
 
 print('initializing...')  # noqa
 
-# Code destined to scanning folder/subfolder/files
-# and creating tree structure to print on console.
+# Code destined to scanning python files lines of
+# code count in given input folder, and creating
+# tree structure to print on console.
 
 ######################################################################
 # imports
@@ -26,7 +27,7 @@ def get_args_dict() -> dict:
     :return: Dictionary. Represents the parsed arguments.
     """
     # defining program description
-    description = "pytree - a python cli utility for visualizing folder trees with sizes and counts"
+    description = "pytree-loc - a python cli utility for counting lines of code in python projects"
 
     # creating a parser instance
     parser = ArgumentParser(description=description)
@@ -61,14 +62,6 @@ def get_args_dict() -> dict:
                         action='store_true',
                         help='tree displays the number of files or folders inside each directory',
                         default=False)
-
-    # extension param
-    parser.add_argument('-x', '--extension',
-                        dest='extension',
-                        required=False,
-                        type=str or None,
-                        help='tree will include only files that match given extension (e.g. ".txt", ".pdf")',
-                        default=None)
 
     # keyword param
     parser.add_argument('-k', '--keyword',
@@ -146,7 +139,7 @@ def parse_and_run(args_dict: dict,
     include_sizes = args_dict['show_sizes']
 
     # getting extension
-    extension = args_dict['extension']
+    extension = '.py'
 
     # getting keyword
     keyword = args_dict['keyword']
@@ -155,7 +148,7 @@ def parse_and_run(args_dict: dict,
     level = args_dict['level']
 
     # getting mode
-    mode = 'tree'
+    mode = 'loc'
 
     # running pytree function
     pytree(start_path=start_path,
