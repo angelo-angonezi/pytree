@@ -9,6 +9,7 @@
 # importing required libraries
 from sys import stdout
 from os.path import sep
+from os.path import islink
 from os.path import abspath
 from os import get_terminal_size
 from pytree.utils.global_vars import ONE_KB
@@ -173,6 +174,40 @@ def get_start_path(start_path: str or list) -> str:
     return start_path
 
 
+def get_skip_bool(folder_path: str,
+                  start_path: str,
+                  cache_folders: list
+                  ) -> bool:
+    """
+    Given a path to a folder, returns
+    True if folder should be skipped,
+    and False otherwise.
+    """
+    # defining placeholder value for skip bool
+    skip_bool = False
+
+    # getting path is root bool
+    path_is_root = (folder_path == start_path)
+
+    # checking if current path is root
+    if not path_is_root:
+
+        # getting folder is symlink bool
+        folder_is_symlink = islink(path=folder_path)
+
+        # getting folder is cache bool
+        folder_is_cache = is_cache(path=folder_path,
+                                   cache_folders=cache_folders)
+
+        # assembling skip conditions list
+        skip_conditions = [folder_is_symlink, folder_is_cache]
+
+        # updating skip bool
+        skip_bool = any(skip_conditions)
+
+    # returning skip bool
+    return skip_bool
+
 def get_path_split(path: str) -> list:
     """
     Given a path, returns its split
@@ -248,6 +283,24 @@ def get_size_str(size_in_bytes: int) -> str:
 
     # returning size str
     return size_str
+
+
+def reverse_dict(a_dict: dict) -> dict:
+    """
+    Given a dictionary, returns
+    reversed dict.
+    """
+    # getting dict items
+    dict_items = a_dict.items()
+
+    # reversing items
+    reversed_items = reversed(dict_items)
+
+    # reassembling dict
+    reversed_dict = dict(reversed_items)
+
+    # returning reversed dict
+    return reversed_dict
 
 ######################################################################
 # end of current module

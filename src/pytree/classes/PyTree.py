@@ -12,13 +12,14 @@ from os import walk
 from treelib import Tree
 from os.path import join
 from os.path import split
-from os.path import islink
 from os.path import abspath
 from os.path import dirname
 from os.path import getsize
 from os import _exit  # noqa
 from pytree.utils.aux_funcs import is_cache
+from pytree.utils.aux_funcs import reverse_dict
 from pytree.utils.aux_funcs import get_size_str
+from pytree.utils.aux_funcs import get_skip_bool
 from pytree.utils.aux_funcs import get_path_depth
 from pytree.utils.aux_funcs import get_start_path
 from pytree.utils.global_vars import CACHE_FOLDERS
@@ -117,30 +118,16 @@ class ModuleProgressTracker(ProgressTracker):
             # getting current folder path/subfolders/files
             folder_path, _, files = item
 
-            # getting path is root bool
-            path_is_root = (folder_path == start_path)
+            # getting skip folder bool
+            skip_folder = get_skip_bool(folder_path=folder_path,
+                                        start_path=start_path,
+                                        cache_folders=CACHE_FOLDERS)
 
-            # checking if current path is root
-            if not path_is_root:
+            # checking whether to skip current folder
+            if skip_folder:
 
-                # getting folder is symlink bool
-                folder_is_symlink = islink(path=folder_path)
-
-                # checking if current folder is symlink
-                if folder_is_symlink:
-
-                    # skipping symlink folder
-                    continue
-
-                # getting folder is cache bool
-                folder_is_cache = is_cache(path=folder_path,
-                                           cache_folders=CACHE_FOLDERS)
-
-                # checking if current folder is cache
-                if folder_is_cache:
-
-                    # skipping cache folder
-                    continue
+                # skipping current folder
+                continue
 
             # updating progress tracker attributes
             self.folders_num += 1
@@ -226,6 +213,10 @@ class PyTree:
         self.total_files = 0
         self.total_size = 0
 
+        # defining placeholder values for current folder size/count
+        self.current_folder_size = 0
+        self.current_items_count = 0
+
         # valid files
         self.valid_files = 0
 
@@ -298,9 +289,7 @@ class PyTree:
 
     def get_folder_dict(self,
                         folder_name: str,
-                        folder_path: str,
-                        folder_size: int,
-                        items_count: int
+                        folder_path: str
                         ) -> dict:
         """
         Given a folder path, returns
@@ -317,16 +306,26 @@ class PyTree:
         if self.include_sizes:
 
             # updating base dict
-            base_dict['size'] = folder_size
+            base_dict['size'] = self.current_folder_size
 
         # checking include counts toggle
         if self.include_counts:
 
             # updating base dict
-            base_dict['count'] = items_count
+            base_dict['count'] = self.current_items_count
 
         # returning base dict
         return base_dict
+
+    def scan_file(self,
+                  file_path: str
+                  ) -> None:
+        pass
+
+    def scan_folder(self,
+                    folder_path: str
+                    ) -> None:
+        pass
 
     def get_tree_dict(self) -> dict:
         """
@@ -342,30 +341,16 @@ class PyTree:
             # getting current folder path/subfolders/files
             folder_path, subfolders, files = item
 
-            # getting path is root bool
-            path_is_root = (folder_path == self.start_path)
+            # getting skip folder bool
+            skip_folder = get_skip_bool(folder_path=folder_path,
+                                        start_path=self.start_path,
+                                        cache_folders=self.cache_folders)
 
-            # checking if current path is root
-            if not path_is_root:
+            # checking whether to skip current folder
+            if skip_folder:
 
-                # getting folder is symlink bool
-                folder_is_symlink = islink(path=folder_path)
-
-                # checking if current folder is symlink
-                if folder_is_symlink:
-
-                    # skipping symlink folder
-                    continue
-
-                # getting folder is cache bool
-                folder_is_cache = is_cache(path=folder_path,
-                                           cache_folders=self.cache_folders)
-
-                # checking if current folder is cache
-                if folder_is_cache:
-
-                    # skipping cache folder
-                    continue
+                # skipping current folder
+                continue
 
             # updating progress tracker attributes
             self.progress_tracker.current_folder += 1
@@ -383,12 +368,6 @@ class PyTree:
             # getting current folder name
             folder_name = folder_split[-1]
 
-            # defining placeholder value for current folder size/count
-            # TODO: convert this to class attributes
-            #  (update this function to smaller functions, which update/reset these attributes)
-            folder_size = 0
-            items_count = 0
-
             # getting current files num
             files_num = len(files)
 
@@ -397,6 +376,8 @@ class PyTree:
 
             # resetting progress tracker attributes
             self.progress_tracker.current_file = 0
+            self.current_folder_size = 0
+            self.current_items_count = 0
 
             # iterating over current files
             for file in files:
@@ -465,7 +446,7 @@ class PyTree:
                     file_size = file_dict['size']
 
                     # updating folder size
-                    folder_size += file_size
+                    self.current_folder_size += file_size
 
                     # updating total size
                     self.total_size += file_size
@@ -474,7 +455,7 @@ class PyTree:
                 if self.include_counts:
 
                     # updating items count
-                    items_count += 1
+                    self.current_items_count += 1
 
             # iterating over current subfolders
             for subfolder in subfolders:
@@ -483,29 +464,21 @@ class PyTree:
                 subfolder_path = join(folder_path,
                                       subfolder)
 
-                # getting subfolder is symlink bool
-                subfolder_is_symlink = islink(path=subfolder_path)
+                # getting skip folder bool
+                skip_folder = get_skip_bool(folder_path=subfolder_path,
+                                            start_path=self.start_path,
+                                            cache_folders=self.cache_folders)
 
-                # checking if current subfolder is symlink
-                if subfolder_is_symlink:
+                # checking whether to skip current folder
+                if skip_folder:
 
-                    # skipping symlink subfolder
-                    continue
-
-                # getting subfolder is cache bool
-                subfolder_is_cache = is_cache(path=subfolder_path,
-                                              cache_folders=self.cache_folders)
-
-                # checking if current subfolder is cache
-                if subfolder_is_cache:
-
-                    # skipping cache subfolder
+                    # skipping current folder
                     continue
 
                 # getting current subfolder dict
                 subfolder_dict = self.tree_dict.get(subfolder_path)  # this will never be None due to topdown=False!
                                                                      # The subfolder will always have already been a
-                                                                     # folder in previous iteration!
+                                                                     # folder in a previous iteration!
 
                 # checking include sizes toggle
                 if self.include_sizes:
@@ -514,19 +487,17 @@ class PyTree:
                     subfolder_size = subfolder_dict['size']
 
                     # updating folder size
-                    folder_size += subfolder_size
+                    self.current_folder_size += subfolder_size
 
                 # checking include counts toggle
                 if self.include_counts:
 
                     # updating items count
-                    items_count += 1
+                    self.current_items_count += 1
 
             # getting current folder dict
             folder_dict = self.get_folder_dict(folder_name=folder_name,
-                                               folder_path=folder_path,
-                                               folder_size=folder_size,
-                                               items_count=items_count)
+                                               folder_path=folder_path)
 
             # assembling path dict
             path_dict = {folder_path: folder_dict}
@@ -535,7 +506,7 @@ class PyTree:
             self.tree_dict.update(path_dict)
 
         # reversing dict (required since topdown was set to False in os.walk to enable size obtaining optimization)
-        tree_dict = dict(reversed(self.tree_dict.items()))
+        tree_dict = reverse_dict(a_dict=self.tree_dict)
 
         # returning tree dict
         return tree_dict
