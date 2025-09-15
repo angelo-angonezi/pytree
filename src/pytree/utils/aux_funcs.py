@@ -191,6 +191,7 @@ def get_start_path(start_path: str or list) -> str:
 
 def get_skip_bool(folder_path: str,
                   start_path: str,
+                  start_is_cache: bool,
                   cache_folders: list
                   ) -> bool:
     """
@@ -198,8 +199,8 @@ def get_skip_bool(folder_path: str,
     True if folder should be skipped,
     and False otherwise.
     """
-    # defining placeholder value for skip bool
-    skip_bool = False
+    # defining placeholder value for skip conditions list
+    skip_conditions = []
 
     # getting path is root bool
     path_is_root = (folder_path == start_path)
@@ -210,15 +211,21 @@ def get_skip_bool(folder_path: str,
         # getting folder is symlink bool
         folder_is_symlink = islink(path=folder_path)
 
-        # getting folder is cache bool
-        folder_is_cache = is_cache(path=folder_path,
-                                   cache_folders=cache_folders)
+        # appending current condition to skip conditions list
+        skip_conditions.append(folder_is_symlink)
 
-        # assembling skip conditions list
-        skip_conditions = [folder_is_symlink, folder_is_cache]
+        # checking if start path is cache
+        if not start_is_cache:
 
-        # updating skip bool
-        skip_bool = any(skip_conditions)
+            # getting folder is cache bool
+            folder_is_cache = is_cache(path=folder_path,
+                                       cache_folders=cache_folders)
+
+            # appending current condition to skip conditions list
+            skip_conditions.append(folder_is_cache)
+
+    # updating skip bool
+    skip_bool = any(skip_conditions)
 
     # returning skip bool
     return skip_bool

@@ -11,14 +11,15 @@
 from os import walk
 from treelib import Tree
 from os.path import join
-from os.path import split
 from os.path import abspath
 from os.path import dirname
 from os.path import getsize
 from os import _exit  # noqa
-from pytree.utils.aux_funcs import reverse_dict, get_path_name
+from pytree.utils.aux_funcs import is_cache
+from pytree.utils.aux_funcs import reverse_dict
 from pytree.utils.aux_funcs import get_size_str
 from pytree.utils.aux_funcs import get_skip_bool
+from pytree.utils.aux_funcs import get_path_name
 from pytree.utils.aux_funcs import get_path_depth
 from pytree.utils.aux_funcs import get_start_path
 from pytree.utils.global_vars import CACHE_FOLDERS
@@ -107,6 +108,10 @@ class ModuleProgressTracker(ProgressTracker):
         start_path = args_dict['start_path']
         start_path = get_start_path(start_path)
 
+        # getting start is cache bool
+        start_is_cache = is_cache(path=start_path,
+                                  cache_folders=CACHE_FOLDERS)
+
         # getting folders/subfolders/files in start path
         folders_subfolders_files = walk(start_path,
                                         topdown=False)
@@ -120,6 +125,7 @@ class ModuleProgressTracker(ProgressTracker):
             # getting skip folder bool
             skip_folder = get_skip_bool(folder_path=folder_path,
                                         start_path=start_path,
+                                        start_is_cache=start_is_cache,
                                         cache_folders=CACHE_FOLDERS)
 
             # checking whether to skip current folder
@@ -197,6 +203,10 @@ class PyTree:
         self.level = level
         self.cache_folders = cache_folders
         self.progress_tracker = progress_tracker
+
+        # getting start is cache bool
+        self.start_is_cache = is_cache(path=self.start_path,
+                                       cache_folders=self.cache_folders)
 
         # getting start level
         self.start_level = get_path_depth(path=self.start_path)
@@ -343,6 +353,7 @@ class PyTree:
             # getting skip folder bool
             skip_folder = get_skip_bool(folder_path=folder_path,
                                         start_path=self.start_path,
+                                        start_is_cache=self.start_is_cache,
                                         cache_folders=self.cache_folders)
 
             # checking whether to skip current folder
@@ -463,6 +474,7 @@ class PyTree:
                 # getting skip folder bool
                 skip_folder = get_skip_bool(folder_path=subfolder_path,
                                             start_path=self.start_path,
+                                            start_is_cache=self.start_is_cache,
                                             cache_folders=self.cache_folders)
 
                 # checking whether to skip current folder
