@@ -357,8 +357,15 @@ def get_loc(file_path: str) -> int:
     # defining placeholder value for lines of code (loc)
     loc = 0
 
+    # defining bracket likes start/end
+    bracketlikes_start = ['"""', '(', '[', '{']
+    bracketlikes_end = ['"""', '(', '[', '{']
+
     # defining read mode
     read_mode = 'r'
+
+    # defining placeholder for skip next line bool
+    skip_next = False
 
     # reading file
     with open(file_path, read_mode) as open_file:
@@ -369,11 +376,46 @@ def get_loc(file_path: str) -> int:
         # iterating over lines
         for line in lines:
 
+            # checking skip next bool
+            if skip_next:
+
+                # skipping line
+                continue
+
+            # cleaning line
+            line = line.replace(' ', '')
+
             # getting line is comment bool
             line_is_comment = line.startswith('#')
 
-            # checking if current line is comment
-            if line_is_comment:
+            # getting line is emtpy bool
+            line_is_empty = line.startswith('\n')
+
+            # getting line starts with bracket-like bool
+            startswith_bracketlike = any([line.startswith(bracketlike) for bracketlike in bracketlikes_start])
+            endswith_bracketlike = any([line.endswith(bracketlike) for bracketlike in bracketlikes_end])
+
+            # checking whether line starts with bracket-like
+            if startswith_bracketlike:
+
+                # updating skip next bool
+                skip_next = True
+
+            # checking whether line ends with bracket-like
+            if endswith_bracketlike:
+
+                # updating skip next bool
+                skip_next = False
+
+            # assembling skip conditions list
+            skip_conditions = [line_is_comment,
+                               line_is_empty]
+
+            # getting skip bool
+            skip_bool = any(skip_conditions)
+
+            # checking whether line should be skipped
+            if skip_bool:
 
                 # skipping current line
                 continue

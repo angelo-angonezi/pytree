@@ -437,7 +437,6 @@ class PyTree:
             # updating folder loc
             self.current_folder_loc += subfolder_loc
 
-
     def scan_folder(self,
                     folder_path: str,
                     subfolders: list,
