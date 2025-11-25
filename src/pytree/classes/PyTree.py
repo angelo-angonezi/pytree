@@ -9,6 +9,7 @@
 
 # importing required libraries
 from os import walk
+from sys import platform
 from treelib import Tree
 from os.path import join
 from os.path import abspath
@@ -60,6 +61,7 @@ class ModuleProgressTracker(ProgressTracker):
 
         # end string
         self.end_string = ''
+        self.print_end_string = ''
 
     # overwriting class methods (using current module specific attributes)
 
@@ -171,7 +173,7 @@ class ModuleProgressTracker(ProgressTracker):
 
         # printing end string
         print(self.end_string,
-              end='')
+              end=self.print_end_string)
 
 #####################################################################
 # PyTree definition
@@ -816,6 +818,26 @@ class PyTree:
 
         # updating progress tracker attributes
         self.progress_tracker.end_string = end_string
+
+    def update_print_end_string(self) -> None:
+        """
+        Updates end string with folder/files
+        description summary (counts/sizes).
+        """
+        # defining placeholder value for new print end string
+        print_end_string = ''
+
+        # getting os is linux bool
+        os_is_linux = (platform == 'linux')
+
+        # checking if os is linux
+        if os_is_linux:
+
+            # updating print end string
+            print_end_string = '\n'
+
+        # updating progress tracker attributes
+        self.progress_tracker.print_end_string = print_end_string
 
     def run(self):
         """
