@@ -854,5 +854,8 @@ class PyTree:
         # updating end string
         self.update_end_string()
 
+        # updating print end string
+        self.update_print_end_string()
+
 ######################################################################
 # end of current module
