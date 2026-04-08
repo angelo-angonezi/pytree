@@ -178,11 +178,11 @@ class ModuleProgressTracker(ProgressTracker):
         to define what to print before
         terminating execution.
         """
+        # printing spacer
+        print('\n')
+
         # checking whether to show tree
         if self.show_tree:
-
-            # printing spacer
-            print('\n')
 
             # showing tree
             self.tree.show()
