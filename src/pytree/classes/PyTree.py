@@ -18,7 +18,7 @@ from os.path import getsize
 from os import _exit  # noqa
 from pytree.utils.aux_funcs import get_loc
 from pytree.utils.aux_funcs import is_cache
-from pytree.utils.aux_funcs import get_loc_str
+from pytree.utils.aux_funcs import get_loc_com_str
 from pytree.utils.aux_funcs import reverse_dict
 from pytree.utils.aux_funcs import get_size_str
 from pytree.utils.aux_funcs import get_skip_file
@@ -188,10 +188,10 @@ class PyTree:
                  dirs_only: bool,
                  include_counts: bool,
                  include_sizes: bool,
-                 extension: str or None,
-                 keyword: str or None,
+                 extension: str | None,  # noqa
+                 keyword: str | None,  # noqa
                  level: int,
-                 mode: str,
+                 loc: bool,
                  cache_folders: list = CACHE_FOLDERS,
                  progress_tracker: ModuleProgressTracker = ModuleProgressTracker
                  ) -> None:
@@ -207,12 +207,15 @@ class PyTree:
         self.extension = extension
         self.keyword = keyword
         self.level = level
-        self.mode = mode
+        self.loc = loc
         self.cache_folders = cache_folders
         self.progress_tracker = progress_tracker
 
-        # getting mode is loc bool
-        self.mode_is_loc = (self.mode == 'loc')
+        # checking whether mode is loc
+        if self.loc:
+
+            # updating valid extensions
+            self.extension = '.py'
 
         # getting start is cache bool
         self.start_is_cache = is_cache(path=self.start_path,
@@ -232,11 +235,13 @@ class PyTree:
         self.total_files = 0
         self.total_size = 0
         self.total_loc = 0
+        self.total_com = 0
 
         # defining placeholder values for current folder size/count
         self.current_folder_size = 0
         self.current_items_count = 0
         self.current_folder_loc = 0
+        self.current_folder_com = 0
 
         # valid files
         self.valid_files = 0
@@ -306,13 +311,14 @@ class PyTree:
             base_dict['size'] = file_size
 
         # checking mode
-        if self.mode_is_loc:
+        if self.loc:
 
             # getting lines of code
-            lines_of_code = get_loc(file_path=file_path)
+            loc, com = get_loc(file_path=file_path)
 
             # updating base dict
-            base_dict['loc'] = lines_of_code
+            base_dict['loc'] = loc
+            base_dict['com'] = com
 
         # returning base dict
         return base_dict
@@ -345,10 +351,11 @@ class PyTree:
             base_dict['count'] = self.current_items_count
 
         # checking mode
-        if self.mode_is_loc:
+        if self.loc:
 
             # updating base dict
             base_dict['loc'] = self.current_folder_loc
+            base_dict['com'] = self.current_folder_com
 
         # returning base dict
         return base_dict
@@ -391,16 +398,19 @@ class PyTree:
             self.valid_files += 1
 
         # checking mode
-        if self.mode_is_loc:
+        if self.loc:
 
-            # getting file loc
+            # getting file loc/com
             file_loc = file_dict['loc']
+            file_com = file_dict['com']
 
             # updating folder loc
             self.current_folder_loc += file_loc
+            self.current_folder_com += file_com
 
             # updating total loc
             self.total_loc += file_loc
+            self.total_com += file_com
 
     def scan_subfolder(self,
                        subfolder_path: str
@@ -431,13 +441,15 @@ class PyTree:
             self.current_items_count += 1
 
         # checking mode
-        if self.mode_is_loc:
+        if self.loc:
 
-            # getting file loc
+            # getting file loc/com
             subfolder_loc = subfolder_dict['loc']
+            subfolder_com = subfolder_dict['com']
 
-            # updating folder loc
+            # updating folder loc/com
             self.current_folder_loc += subfolder_loc
+            self.current_folder_com += subfolder_com
 
     def scan_folder(self,
                     folder_path: str,
@@ -601,16 +613,18 @@ class PyTree:
             file_tag += f' ({size_str})'
 
         # checking mode
-        if self.mode_is_loc:
+        if self.loc:
 
             # getting additional path dict info
             file_loc = path_dict['loc']
+            file_com = path_dict['com']
 
             # getting loc string
-            loc_str = get_loc_str(loc=file_loc)
+            loc_com_str = get_loc_com_str(loc=file_loc,
+                                          com=file_com)
 
             # updating file tag
-            file_tag += f' {{{loc_str}}}'
+            file_tag += f' {{{loc_com_str}}}'
 
         # returning file tag
         return file_tag
@@ -808,10 +822,11 @@ class PyTree:
             end_string += f', {total_size_str}'
 
         # checking mode
-        if self.mode_is_loc:
+        if self.loc:
 
             # getting total loc string
-            total_loc_str = get_loc_str(loc=self.total_loc)
+            total_loc_str = get_loc_com_str(loc=self.total_loc,
+                                            com=self.total_com)
 
             # updating end string
             end_string += f', {total_loc_str}'

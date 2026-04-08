@@ -67,7 +67,7 @@ def get_args_dict() -> dict:
     parser.add_argument('-k', '--keyword',
                         dest='keyword',
                         required=False,
-                        type=str or None,
+                        type=str | None,
                         help='tree will include only files that contain specific keyword on file name',
                         default=None)
 
@@ -75,7 +75,7 @@ def get_args_dict() -> dict:
     parser.add_argument('-l', '--level',
                         dest='level',
                         required=False,
-                        type=int or None,
+                        type=int | None,
                         help="defines tree's depth (until which subfolder tree will be created) [0=start_path, -1=all]",
                         default=-1)
 
@@ -111,7 +111,7 @@ def pytree(start_path: str,
                   extension=extension,
                   keyword=keyword,
                   level=level,
-                  mode=mode,
+                  loc=mode,
                   progress_tracker=progress_tracker)
 
     # running pytree main

@@ -66,7 +66,7 @@ def get_args_dict() -> dict:
     parser.add_argument('-x', '--extension',
                         dest='extension',
                         required=False,
-                        type=str or None,
+                        type=str,
                         help='tree will include only files that match given extension (e.g. ".txt", ".pdf")',
                         default=None)
 
@@ -74,7 +74,7 @@ def get_args_dict() -> dict:
     parser.add_argument('-k', '--keyword',
                         dest='keyword',
                         required=False,
-                        type=str or None,
+                        type=str,
                         help='tree will include only files that contain specific keyword on file name',
                         default=None)
 
@@ -82,9 +82,17 @@ def get_args_dict() -> dict:
     parser.add_argument('-l', '--level',
                         dest='level',
                         required=False,
-                        type=int or None,
+                        type=int,
                         help="defines tree's depth (until which subfolder tree will be created) [0=start_path, -1=all]",
                         default=-1)
+
+    # lines of code param
+    parser.add_argument('-loc', '--lines-of-code',
+                        dest='loc',
+                        required=False,
+                        action='store_true',
+                        help='tree displays the number of lines of code/comment for .py files in dir',
+                        default=False)
 
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
@@ -103,7 +111,7 @@ def pytree(start_path: str,
            extension: str,
            keyword: str,
            level: int,
-           mode: str,
+           loc: bool,
            progress_tracker: ModuleProgressTracker
            ) -> None:
     """
@@ -118,7 +126,7 @@ def pytree(start_path: str,
                   extension=extension,
                   keyword=keyword,
                   level=level,
-                  mode=mode,
+                  loc=loc,
                   progress_tracker=progress_tracker)
 
     # running pytree main
@@ -154,8 +162,8 @@ def parse_and_run(args_dict: dict,
     # getting level
     level = args_dict['level']
 
-    # getting mode
-    mode = 'tree'
+    # getting loc
+    loc = args_dict['loc']
 
     # running pytree function
     pytree(start_path=start_path,
@@ -165,7 +173,7 @@ def parse_and_run(args_dict: dict,
            extension=extension,
            keyword=keyword,
            level=level,
-           mode=mode,
+           loc=loc,
            progress_tracker=progress_tracker)
 
 ######################################################################

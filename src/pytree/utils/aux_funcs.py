@@ -7,6 +7,9 @@
 # imports
 
 # importing required libraries
+from re import sub
+from re import escape
+from re import DOTALL
 from sys import stdout
 from os.path import sep
 from os.path import islink
@@ -72,7 +75,7 @@ def flush_string(string: str) -> None:
     stdout.write(backspace_line)
 
 
-def get_number_string(num: int or float,
+def get_number_string(num: int | float,
                       digits: int = 2
                       ) -> str:
     """
@@ -232,8 +235,8 @@ def get_skip_folder(folder_path: str,
 
 
 def get_skip_file(file_name: str,
-                  extension: str or None,
-                  keyword: str or None
+                  extension: str | None,
+                  keyword: str | None
                   ) -> bool:
     """
     Given a file name, returns True
@@ -348,74 +351,111 @@ def get_size_str(size_in_bytes: int) -> str:
     return size_str
 
 
+def collapse_brackets(text: str) -> str:
+    """
+    Given a text, returns text clear
+    of bracket-like line breaks.
+    """
+    # defining placeholder for bracket-likes list
+    bracket_likes = [('(', ')'),
+                     ('[', ']'),
+                     ('{', '}'),
+                     ('"""', '"""')]
+
+    # iterating over bracket-likes list
+    for bracket_like in bracket_likes:
+
+        # getting bracket start/end
+        bracket_start, bracket_end = bracket_like
+
+        # assembling current pattern string
+        pattern = f'({escape(bracket_start)}).*?({escape(bracket_end)})'
+
+        # clearing text of current bracket like
+        text = sub(pattern=pattern,
+                   repl=r'\1\2',
+                   string=text,
+                   flags=DOTALL)
+
+    # returning clean text
+    return text
+
+
 def get_loc(file_path: str) -> int:
     """
     Given a path to a python file,
     returns number of lines of code
     (disconsidering comments and enters)
     """
-    # defining placeholder value for lines of code (loc)
+    # defining placeholder value for lines of code (loc) and comments (com)
     loc = 0
+    com = 0
 
-    # defining bracket likes start/end
-    bracketlikes_start = ['"""', '(', '[', '{']
-    bracketlikes_end = ['"""', '(', '[', '{']
+    # defining docstring symbol
+    docstring_symbol = '"""'
+
+    # defining comment symbol
+    comment_symbol = '#'
 
     # defining read mode
     read_mode = 'r'
 
-    # defining placeholder for skip next line bool
-    skip_next = False
-
     # reading file
     with open(file_path, read_mode) as open_file:
 
+        # getting text
+        text = open_file.read()
+
+        # cleaning text
+        text = collapse_brackets(text=text)
+
         # getting file lines
-        lines = open_file.readlines()
+        lines = text.split('\n')
 
         # iterating over lines
         for line in lines:
 
-            # checking skip next bool
-            if skip_next:
+            # cleaning line
+            line = line.strip()
 
-                # skipping line
+            # getting line is empty bool
+            line_is_empty = (line == '')
+
+            # checking whether line is empty
+            if line_is_empty:
+
+                # skipping current line
                 continue
 
-            # cleaning line
-            line = line.replace(' ', '')
-
             # getting line is comment bool
-            line_is_comment = line.startswith('#')
+            line_is_comment = line.startswith(comment_symbol)
 
-            # getting line is emtpy bool
-            line_is_empty = line.startswith('\n')
+            # checking whether line is comment
+            if line_is_comment:
 
-            # getting line starts with bracket-like bool
-            startswith_bracketlike = any([line.startswith(bracketlike) for bracketlike in bracketlikes_start])
-            endswith_bracketlike = any([line.endswith(bracketlike) for bracketlike in bracketlikes_end])
+                # updating comments count
+                com += 1
 
-            # checking whether line starts with bracket-like
-            if startswith_bracketlike:
+                # skipping current line
+                continue
 
-                # updating skip next bool
-                skip_next = True
+            # getting line has inline comment bool
+            line_has_comment = (comment_symbol in line)
 
-            # checking whether line ends with bracket-like
-            if endswith_bracketlike:
+            # checking whether line has comment
+            if line_has_comment:
 
-                # updating skip next bool
-                skip_next = False
+                # updating comments count
+                com += 1
 
-            # assembling skip conditions list
-            skip_conditions = [line_is_comment,
-                               line_is_empty]
+            # getting line is docstring bool
+            line_is_docstring = line.startswith(docstring_symbol)
 
-            # getting skip bool
-            skip_bool = any(skip_conditions)
+            # checking whether line is docstring
+            if line_is_docstring:
 
-            # checking whether line should be skipped
-            if skip_bool:
+                # updating comments count
+                com += 1
 
                 # skipping current line
                 continue
@@ -424,19 +464,37 @@ def get_loc(file_path: str) -> int:
             loc += 1
 
     # returning lines of code count
-    return loc
+    return loc, com
 
 
-def get_loc_str(loc: int) -> str:
+def get_loc_com_str(loc: int,
+                    com: int
+                    ) -> str:
     """
-    Given a file/folder lines of code
-    count, returns its formatted string.
+    Given a file/folder lines of code and
+    comments counts, returns its formatted
+    string.
     """
+    # getting lines total
+    lines_total = loc + com
+
+    # calculating ratios
+    loc_ratio = (loc / lines_total)
+    com_ratio = (com / lines_total)
+
+    # calculating percentages
+    loc_percent = (loc_ratio * 100)
+    com_percent = (com_ratio * 100)
+
+    # rounding percentages
+    loc_percent = round(loc_percent)
+    com_percent = round(com_percent)
+
     # assembling loc string
-    loc_str = f'{loc} lines'
+    loc_com_str = f'{loc} lines of code ({loc_percent}%), {com} comments ({com_percent}%)'
 
-    # returning loc string
-    return loc_str
+    # returning loc/com string
+    return loc_com_str
 
 
 def reverse_dict(a_dict: dict) -> dict:
