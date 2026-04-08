@@ -18,13 +18,13 @@ from os.path import getsize
 from os import _exit  # noqa
 from pytree.utils.aux_funcs import get_loc
 from pytree.utils.aux_funcs import is_cache
-from pytree.utils.aux_funcs import get_loc_com_str
 from pytree.utils.aux_funcs import reverse_dict
 from pytree.utils.aux_funcs import get_size_str
 from pytree.utils.aux_funcs import get_skip_file
 from pytree.utils.aux_funcs import get_path_name
 from pytree.utils.aux_funcs import get_path_depth
 from pytree.utils.aux_funcs import get_start_path
+from pytree.utils.aux_funcs import get_loc_com_str
 from pytree.utils.aux_funcs import get_skip_folder
 from pytree.utils.global_vars import CACHE_FOLDERS
 from pytree.classes.ProgressTracker import ProgressTracker
@@ -188,8 +188,8 @@ class PyTree:
                  dirs_only: bool,
                  include_counts: bool,
                  include_sizes: bool,
-                 extension: str | None,  # noqa
-                 keyword: str | None,  # noqa
+                 extension: str | None,
+                 keyword: str | None,
                  level: int,
                  loc: bool,
                  cache_folders: list = CACHE_FOLDERS,
