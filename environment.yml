@@ -1,0 +1,13 @@
+name: pytree
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - rich
+      - build
+      - twine
+      - treelib
