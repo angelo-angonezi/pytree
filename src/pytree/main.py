@@ -102,6 +102,14 @@ def get_args_dict() -> dict:
                         default=None,
                         help='saves tree as a table in given output path [.csv]')
 
+    # quiet param
+    parser.add_argument('-q', '--quiet',
+                        dest='quiet',
+                        required=False,
+                        action='store_true',
+                        help='only saves tree to output path (does not print tree on terminal)',
+                        default=False)
+
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
 
@@ -121,6 +129,7 @@ def pytree(start_path: str,
            level: int,
            loc: bool,
            output_path: str | None,
+           quiet: bool,
            progress_tracker: ModuleProgressTracker
            ) -> None:
     """
@@ -137,6 +146,7 @@ def pytree(start_path: str,
                   level=level,
                   loc=loc,
                   output_path=output_path,
+                  quiet=quiet,
                   progress_tracker=progress_tracker)
 
     # running pytree main
@@ -178,6 +188,9 @@ def parse_and_run(args_dict: dict,
     # getting output path
     output_path = args_dict['output_path']
 
+    # getting quiet bool
+    quiet = args_dict['quiet']
+
     # running pytree function
     pytree(start_path=start_path,
            dirs_only=dirs_only,
@@ -188,6 +201,7 @@ def parse_and_run(args_dict: dict,
            level=level,
            loc=loc,
            output_path=output_path,
+           quiet=quiet,
            progress_tracker=progress_tracker)
 
 ######################################################################

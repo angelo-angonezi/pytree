@@ -61,6 +61,7 @@ class ModuleProgressTracker(ProgressTracker):
 
         # tree
         self.tree = Tree()
+        self.show_tree = False
 
         # end string
         self.end_string = ''
@@ -116,6 +117,15 @@ class ModuleProgressTracker(ProgressTracker):
         start_path = args_dict['start_path']
         start_path = get_start_path(start_path)
 
+        # getting quiet bool
+        quiet = args_dict['quiet']
+
+        # getting show tree bool
+        show_tree = (not quiet)
+
+        # updating progress tracker attributes
+        self.show_tree = show_tree
+
         # getting start is cache bool
         start_is_cache = is_cache(path=start_path,
                                   cache_folders=CACHE_FOLDERS)
@@ -168,11 +178,14 @@ class ModuleProgressTracker(ProgressTracker):
         to define what to print before
         terminating execution.
         """
-        # printing spacer
-        print('\n')
+        # checking whether to show tree
+        if self.show_tree:
 
-        # showing tree
-        self.tree.show()
+            # printing spacer
+            print('\n')
+
+            # showing tree
+            self.tree.show()
 
         # printing end string
         print(self.end_string,
@@ -196,6 +209,7 @@ class PyTree:
                  level: int,
                  loc: bool,
                  output_path: str | None,
+                 quiet: bool,
                  cache_folders: list = CACHE_FOLDERS,
                  progress_tracker: ModuleProgressTracker = ModuleProgressTracker
                  ) -> None:
@@ -213,6 +227,7 @@ class PyTree:
         self.level = level
         self.loc = loc
         self.output_path = output_path
+        self.quiet = quiet
         self.cache_folders = cache_folders
         self.progress_tracker = progress_tracker
 
@@ -221,6 +236,9 @@ class PyTree:
 
             # updating valid extensions
             self.extension = '.py'
+
+        # getting show tree bool
+        self.show_tree = (not self.quiet)
 
         # getting save output bool
         self.save_output = (self.output_path is not None)
@@ -848,7 +866,7 @@ class PyTree:
         # getting updated tree
         tree = self.dict_to_tree(tree_dict=self.tree_dict)
 
-        # updating attributes
+        # updating progress tracker attributes
         self.progress_tracker.tree = tree
 
     def save_tree(self) -> None:
@@ -948,17 +966,20 @@ class PyTree:
         # updating tree dict
         self.update_tree_dict()
 
-        # updating tree
-        self.update_tree()
+        # checking whether to show tree
+        if self.show_tree:
 
-        # updating end string
-        self.update_end_string()
+            # updating tree
+            self.update_tree()
 
         # checking whether to save tree
         if self.save_output:
 
             # saving tree
             self.save_tree()
+
+        # updating end string
+        self.update_end_string()
 
         # updating print end string
         self.update_print_end_string()
