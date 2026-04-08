@@ -454,8 +454,8 @@ class ProgressTracker:
         self.exit(message=e_string)
 
     def run(self,
-            function: callable,
-            args_parser: callable
+            function: callable,  # noqa
+            args_parser: callable  # noqa
             ) -> None:
         """
         Runs given function monitoring
