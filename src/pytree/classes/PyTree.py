@@ -12,11 +12,14 @@ from os import walk
 from sys import platform
 from treelib import Tree
 from os.path import join
+from pandas import concat
 from os.path import abspath
 from os.path import dirname
 from os.path import getsize
+from pandas import DataFrame
 from os import _exit  # noqa
 from pytree.utils.aux_funcs import get_loc
+from pytree.utils.aux_funcs import save_df
 from pytree.utils.aux_funcs import is_cache
 from pytree.utils.aux_funcs import reverse_dict
 from pytree.utils.aux_funcs import get_size_str
@@ -57,7 +60,7 @@ class ModuleProgressTracker(ProgressTracker):
         self.current_file = 0
 
         # tree
-        self.tree = None
+        self.tree = Tree()
 
         # end string
         self.end_string = ''
@@ -192,6 +195,7 @@ class PyTree:
                  keyword: str | None,
                  level: int,
                  loc: bool,
+                 output_path: str | None,
                  cache_folders: list = CACHE_FOLDERS,
                  progress_tracker: ModuleProgressTracker = ModuleProgressTracker
                  ) -> None:
@@ -208,6 +212,7 @@ class PyTree:
         self.keyword = keyword
         self.level = level
         self.loc = loc
+        self.output_path = output_path
         self.cache_folders = cache_folders
         self.progress_tracker = progress_tracker
 
@@ -216,6 +221,9 @@ class PyTree:
 
             # updating valid extensions
             self.extension = '.py'
+
+        # getting save output bool
+        self.save_output = (self.output_path is not None)
 
         # getting start is cache bool
         self.start_is_cache = is_cache(path=self.start_path,
@@ -765,6 +773,64 @@ class PyTree:
         # returning tree
         return tree
 
+    def dict_to_df(self,
+                   tree_dict: dict
+                   ) -> DataFrame:
+        """
+        Converts folder/file description
+        dict into a pandas.DataFrame object.
+        """
+        # defining placeholder value for dfs list
+        dfs_list = []
+
+        # getting dict items
+        dict_items = tree_dict.items()
+
+        # iterating over dict items
+        for item in dict_items:
+
+            # getting current path/dict
+            path, path_dict = item
+
+            # getting base path dict info
+            path_level = path_dict['level']
+            path_type = path_dict['type']
+
+            # getting path is file bool
+            path_is_file = (path_type == 'file')
+
+            # checking apply level filter
+            if self.apply_level_filter:
+
+                # checking if current level is above max
+                if path_level > self.level:
+
+                    # skipping path
+                    continue
+
+            # checking dirs only bool
+            if self.dirs_only:
+
+                # checking if path is file
+                if path_is_file:
+
+                    # skipping current node
+                    continue
+
+            # assembling current df
+            current_df = DataFrame(path_dict,
+                                   index=[0])
+
+            # appending current df to dfs list
+            dfs_list.append(current_df)
+
+        # concatenating dfs in dfs list
+        final_df = concat(dfs_list,
+                          ignore_index=True)
+
+        # returning final df
+        return final_df
+
     def update_tree_dict(self) -> None:
         """
         Updates tree dict based on start path.
@@ -784,6 +850,18 @@ class PyTree:
 
         # updating attributes
         self.progress_tracker.tree = tree
+
+    def save_tree(self) -> None:
+        """
+        Saves tree as a table in
+        given output folder.
+        """
+        # getting tree df
+        tree_df = self.dict_to_df(tree_dict=self.tree_dict)
+
+        # saving df
+        save_df(save_path=self.output_path,
+                df=tree_df)
 
     def update_end_string(self) -> None:
         """
@@ -831,6 +909,13 @@ class PyTree:
             # updating end string
             end_string += f', {total_loc_str}'
 
+        # checking save output toggle
+        if self.save_output:
+
+            # updating end string
+            end_string += f'\n'
+            end_string += f'Saved output table to "{self.output_path}"'
+
         # updating progress tracker attributes
         self.progress_tracker.end_string = end_string
 
@@ -868,6 +953,12 @@ class PyTree:
 
         # updating end string
         self.update_end_string()
+
+        # checking whether to save tree
+        if self.save_output:
+
+            # saving tree
+            self.save_tree()
 
         # updating print end string
         self.update_print_end_string()

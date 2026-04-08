@@ -14,6 +14,7 @@ from sys import stdout
 from os.path import sep
 from os.path import islink
 from os.path import abspath
+from pandas import DataFrame
 from os import get_terminal_size
 from pytree.utils.global_vars import ONE_KB
 from pytree.utils.global_vars import ONE_MB
@@ -513,6 +514,18 @@ def reverse_dict(a_dict: dict) -> dict:
 
     # returning reversed dict
     return reversed_dict
+
+
+def save_df(save_path: str,
+            df: DataFrame
+            ) -> None:
+    """
+    Given a dataframe, saves it
+    to given save path.
+    """
+    # saving df
+    df.to_csv(path_or_buf=save_path,
+              index=False)
 
 ######################################################################
 # end of current module

@@ -94,6 +94,14 @@ def get_args_dict() -> dict:
                         help='tree displays the number of lines of code/comment for .py files in dir',
                         default=False)
 
+    # output path param
+    parser.add_argument('-o', '--output-path',
+                        dest='output_path',
+                        type=str,
+                        required=False,
+                        default=None,
+                        help='saves tree as a table in given output path [.csv]')
+
     # creating arguments dictionary
     args_dict = vars(parser.parse_args())
 
@@ -112,6 +120,7 @@ def pytree(start_path: str,
            keyword: str,
            level: int,
            loc: bool,
+           output_path: str | None,
            progress_tracker: ModuleProgressTracker
            ) -> None:
     """
@@ -127,6 +136,7 @@ def pytree(start_path: str,
                   keyword=keyword,
                   level=level,
                   loc=loc,
+                  output_path=output_path,
                   progress_tracker=progress_tracker)
 
     # running pytree main
@@ -165,6 +175,9 @@ def parse_and_run(args_dict: dict,
     # getting loc
     loc = args_dict['loc']
 
+    # getting output path
+    output_path = args_dict['output_path']
+
     # running pytree function
     pytree(start_path=start_path,
            dirs_only=dirs_only,
@@ -174,6 +187,7 @@ def parse_and_run(args_dict: dict,
            keyword=keyword,
            level=level,
            loc=loc,
+           output_path=output_path,
            progress_tracker=progress_tracker)
 
 ######################################################################
