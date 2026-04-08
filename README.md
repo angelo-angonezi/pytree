@@ -98,7 +98,7 @@ input directory, e.g:
 pytree test_folder -c --lines-of-code
 ```
 
-```shell
+```
 test_folder [2]
 ├── another_folder [1]
 │   └── empty_folder [0]
