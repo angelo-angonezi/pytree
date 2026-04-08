@@ -10,6 +10,7 @@ dependencies:
       - rich==14.3.3
       - build==1.4.2
       - twine==6.2.0
+      - pandas==2.3.3
       - wheel==0.46.3
       - treelib==1.8.0
       - setuptools==82.0.1
