@@ -11,7 +11,7 @@ pip install pytree2
 ## Usage
 
 ```shell
-pytree [-h] [-d] [-s] [-c] [-x EXTENSION] [-k KEYWORD] [-l LEVEL] [start_path ...]
+pytree [-h] [-d] [-s] [-c] [-x EXTENSION] [-k KEYWORD] [-l LEVEL] [-loc] [-o OUTPUT_PATH] [-q] [start_path ...]
 ```
 
 ```
