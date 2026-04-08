@@ -5,9 +5,11 @@ channels:
 
 dependencies:
   - python=3.10
-  - pip
+  - pip=26.0.1
   - pip:
-      - rich
-      - build
-      - twine
-      - treelib
+      - rich==14.3.3
+      - build==1.4.2
+      - twine==6.2.0
+      - wheel==0.46.3
+      - treelib==1.8.0
+      - setuptools==82.0.1
