@@ -35,6 +35,7 @@ options:
                         tree displays the number of lines of code/comment for .py files in dir
   -o OUTPUT_PATH, --output-path OUTPUT_PATH
                         saves tree as a table in given output path [.csv]
+  -q, --quiet           only saves tree to output path (does not print tree on terminal)
 ```
 
 ### Examples
@@ -119,7 +120,10 @@ test_folder [2] (13 mb)
 Saved output table to "tree.csv"
 ```
 The output .csv will contain the same information as specified by the keywords, such as level (**-l**),
-keyword (**-k**), size (**-s**) and dirs_only (**-d**). 
+keyword (**-k**), size (**-s**) and dirs_only (**-d**).
+
+**Tip:** It can be useful to couple the _--quiet_ flag when saving output, especially when working with
+thousands of files (prevents attempt to print the whole tree on terminal).
 
 #### Lines of code
 _pytree_ can also be used to obtain the count (and percentage) of lines of code (loc) and comments for python files inside
