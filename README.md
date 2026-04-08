@@ -90,3 +90,24 @@ test_folder [2] (136 bytes)
 Notice that by using this option together with the **-c** and **-s** flags, the counts and sizes in the final summary
 line will contain a counter for files matching search criteria, and the total size will reflect only matching files,
 providing an easy and quick way of scanning folders and identifying large files of a specified extension/keyword.
+
+#### Lines of code
+pytree can also be used to obtain the count (and percentage) of lines of code and comments for python files inside
+input directory, e.g:
+```shell
+pytree test_folder -c --lines-of-code
+```
+
+```shell
+test_folder [2]
+├── another_folder [1]
+│   └── empty_folder [0]
+└── folder [2]
+    ├── a_python_file.py {2 lines of code (33%), 4 comments (67%)}
+    └── folder_inside_folder [1]
+        └── another_python_file.py {4 lines of code (40%), 6 comments (60%)}
+
+5 folders, 7 files (2 valid), 6 lines of code (38%), 10 comments (62%)
+```
+This will provide a lines of code and comments count for all .py files in the tree,
+as well as a summary for the whole directory.
