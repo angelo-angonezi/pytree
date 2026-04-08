@@ -171,7 +171,7 @@ def is_cache(path: str,
     return cache_bool
 
 
-def get_start_path(start_path: str or list) -> str:
+def get_start_path(start_path: str | list) -> str:
     """
     Given a parsed start path,
     returns formatted start path.
