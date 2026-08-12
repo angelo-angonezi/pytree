@@ -211,7 +211,7 @@ class PyTree:
                  output_path: str | None,
                  quiet: bool,
                  cache_folders: list = CACHE_FOLDERS,
-                 progress_tracker: ModuleProgressTracker = ModuleProgressTracker
+                 progress_tracker: ModuleProgressTracker = type[ModuleProgressTracker]
                  ) -> None:
         """
         Initializes a PyTree instance

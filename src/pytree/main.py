@@ -34,7 +34,7 @@ def get_args_dict() -> dict:
     # start path param
     parser.add_argument('start_path',
                         nargs='*',
-                        type=str or list,
+                        type=str,
                         help='defines path to directory to start building the tree',
                         default='.')
 

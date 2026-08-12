@@ -382,7 +382,7 @@ def collapse_brackets(text: str) -> str:
     return text
 
 
-def get_loc(file_path: str) -> int:
+def get_loc(file_path: str) -> tuple:
     """
     Given a path to a python file,
     returns number of lines of code
