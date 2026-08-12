@@ -187,7 +187,7 @@ def get_start_path(start_path: str | list) -> str:
         start_path = start_path[0]
 
     # normalizing path
-    start_path = abspath(path=start_path)
+    start_path = abspath(path=start_path)  # noqa
 
     # returning start path
     return start_path
@@ -464,8 +464,11 @@ def get_loc(file_path: str) -> tuple:
             # updating lines of code count
             loc += 1
 
-    # returning lines of code count
-    return loc, com
+    # assembling lines of code/comments tuple
+    loc_com = (loc, com)
+
+    # returning lines of code/comments tuple
+    return loc_com
 
 
 def get_loc_com_str(loc: int,
@@ -477,11 +480,19 @@ def get_loc_com_str(loc: int,
     string.
     """
     # getting lines total
-    lines_total = loc + com
+    lines_total = (loc + com)
 
-    # calculating ratios
-    loc_ratio = (loc / lines_total)
-    com_ratio = (com / lines_total)
+    # calculating loc ratio
+    try:
+        loc_ratio = (loc / lines_total)
+    except ZeroDivisionError:
+        loc_ratio = 0.0
+
+    # calculating com ratio
+    try:
+        com_ratio = (com / lines_total)
+    except ZeroDivisionError:
+        com_ratio = 0.0
 
     # calculating percentages
     loc_percent = (loc_ratio * 100)
