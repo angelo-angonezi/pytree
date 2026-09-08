@@ -11,7 +11,8 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE.md"]
 requires-python = ">=3.10"
-dependencies = ["treelib==1.8.0"]
+dependencies = ["treelib",
+                "pandas"]
 keywords = ["python", "cli", "tree", "folder structure", "file size", "disk usage", "lines of code"]
 
 [project.urls]

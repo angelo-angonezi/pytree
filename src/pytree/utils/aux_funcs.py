@@ -8,6 +8,9 @@
 
 # importing required libraries
 from re import sub
+from os import R_OK
+from os import X_OK
+from os import access
 from re import escape
 from re import DOTALL
 from sys import stdout
@@ -217,6 +220,12 @@ def get_skip_folder(folder_path: str,
 
         # appending current condition to skip conditions list
         skip_conditions.append(folder_is_symlink)
+
+        # getting folder is inaccessible bool (permission denied, vanished mid-scan, etc.)
+        folder_is_inaccessible = not access(folder_path, R_OK | X_OK)
+
+        # appending current condition to skip conditions list
+        skip_conditions.append(folder_is_inaccessible)
 
         # checking if start path is cache
         if not start_is_cache:
