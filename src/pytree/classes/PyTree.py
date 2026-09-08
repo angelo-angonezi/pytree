@@ -30,7 +30,7 @@ from pytree.utils.aux_funcs import get_start_path
 from pytree.utils.aux_funcs import get_loc_com_str
 from pytree.utils.aux_funcs import get_skip_folder
 from pytree.utils.global_vars import CACHE_FOLDERS
-from pytree.classes.ProgressTracker import ProgressTracker
+from pytree.progress_tracker.ProgressTracker import ProgressTracker
 
 #####################################################################
 # progress tracking related functions
@@ -447,9 +447,20 @@ class PyTree:
         dict accordingly.
         """
         # getting current subfolder dict
-        subfolder_dict = self.tree_dict.get(subfolder_path)  # this will never be None due to topdown=False!
-                                                             # The subfolder will always have already been a
-                                                             # folder in a previous iteration!
+        subfolder_dict = self.tree_dict.get(subfolder_path)  # under topdown=False, the subfolder is normally
+                                                             # already in tree_dict from a previous iteration,
+                                                             # but os.walk silently drops directories it cannot
+                                                             # enter (e.g. permission denied, or one that
+                                                             # vanished mid-scan) without ever yielding them,
+                                                             # while still listing their name in the parent's
+                                                             # dirnames - so this can be None; skip contributing
+                                                             # to parent totals in that case instead of crashing
+
+        # checking if subfolder was never scanned (inaccessible/vanished mid-scan)
+        if subfolder_dict is None:
+
+            # skipping current subfolder's contribution to parent totals
+            return
 
         # checking include sizes toggle
         if self.include_sizes:
