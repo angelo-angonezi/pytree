@@ -46,20 +46,20 @@ def get_args_dict() -> dict:
                         help='tree displays directories only, and does not show files inside folders',
                         default=False)
 
-    # show sizes param
-    parser.add_argument('-s', '--show-sizes',
-                        dest='show_sizes',
-                        required=False,
-                        action='store_true',
-                        help='tree displays files and folder sizes, in mega or gigabytes',
-                        default=False)
-
     # show counts param
     parser.add_argument('-c', '--show-counts',
                         dest='show_counts',
                         required=False,
                         action='store_true',
                         help='tree displays the number of files or folders inside each directory',
+                        default=False)
+
+    # show sizes param
+    parser.add_argument('-s', '--show-sizes',
+                        dest='show_sizes',
+                        required=False,
+                        action='store_true',
+                        help='tree displays files and folder sizes, in mega or gigabytes',
                         default=False)
 
     # extension param
