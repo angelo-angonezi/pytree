@@ -12,7 +12,7 @@ print('initializing...')  # noqa
 print('importing required libraries...')  # noqa
 from argparse import ArgumentParser
 from pytree.classes.PyTree import PyTree
-from pytree.utils.aux_funcs import get_start_path
+from pytree.shared.path import get_start_path
 from pytree.classes.PyTree import ModuleProgressTracker
 print('all required libraries successfully imported.')  # noqa
 

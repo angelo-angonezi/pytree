@@ -18,18 +18,18 @@ from os.path import dirname
 from os.path import getsize
 from pandas import DataFrame
 from os import _exit  # noqa
-from pytree.utils.aux_funcs import get_loc
-from pytree.utils.aux_funcs import save_df
-from pytree.utils.aux_funcs import is_cache
-from pytree.utils.aux_funcs import reverse_dict
-from pytree.utils.aux_funcs import get_size_str
-from pytree.utils.aux_funcs import get_skip_file
-from pytree.utils.aux_funcs import get_path_name
-from pytree.utils.aux_funcs import get_path_depth
-from pytree.utils.aux_funcs import get_start_path
-from pytree.utils.aux_funcs import get_loc_com_str
-from pytree.utils.aux_funcs import get_skip_folder
-from pytree.utils.global_vars import CACHE_FOLDERS
+from pytree.shared.loc import get_loc
+from pytree.shared.data import save_df
+from pytree.shared.filter import is_cache
+from pytree.shared.data import reverse_dict
+from pytree.shared.size import get_size_str
+from pytree.shared.path import get_path_name
+from pytree.shared.loc import get_loc_com_str
+from pytree.shared.path import get_path_depth
+from pytree.shared.path import get_start_path
+from pytree.shared.filter import get_skip_file
+from pytree.shared.filter import get_skip_folder
+from pytree.shared.global_vars import CACHE_FOLDERS
 from pytree.progress_tracker.ProgressTracker import ProgressTracker
 
 #####################################################################

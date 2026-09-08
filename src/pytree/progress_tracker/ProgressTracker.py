@@ -15,10 +15,10 @@ from threading import Lock
 from threading import Event
 from os import _exit  # noqa
 from threading import Thread
-from pytree.utils.aux_funcs import flush_string
-from pytree.utils.aux_funcs import get_time_str
-from pytree.utils.global_vars import UPDATE_TIME
-from pytree.utils.aux_funcs import get_number_string
+from pytree.shared.console import flush_string
+from pytree.shared.console import get_time_str
+from pytree.shared.global_vars import UPDATE_TIME
+from pytree.shared.console import get_number_string
 
 #####################################################################
 # ProgressTracker definition
