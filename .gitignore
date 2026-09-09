@@ -135,4 +135,9 @@ dmypy.json
 /src/pytree2.egg-info
 /dist
 
+# Claude Code related
+.claude
+/CLAUDE.md
+/docs/claude
+
 # end of current module
