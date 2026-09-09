@@ -7,18 +7,20 @@
 ######################################################################
 # imports
 
-# importing required libraries
-from time import time
-from time import sleep
-from sys import stdout
-from threading import Lock
-from threading import Event
 from os import _exit  # noqa
+from time import sleep
+from threading import Lock
+from typing import Callable
+from threading import Event
 from threading import Thread
 from pytree.shared.console import flush_string
 from pytree.shared.console import get_time_str
 from pytree.shared.global_vars import UPDATE_TIME
-from pytree.shared.console import get_number_string
+from pytree.progress_tracker.time_utils import get_etc
+from pytree.progress_tracker.console_output import print_totals
+from pytree.progress_tracker.time_utils import get_current_time
+from pytree.progress_tracker.time_utils import get_elapsed_time
+from pytree.progress_tracker.console_output import get_percentage_string
 
 #####################################################################
 # ProgressTracker definition
@@ -27,17 +29,25 @@ from pytree.shared.console import get_number_string
 class ProgressTracker:
     """
     Defines ProgressTracker class.
+
+    The single orchestrator for progress tracking: owns all mutable
+    state and drives the sample -> update state -> format -> print
+    pipeline, calling into the stateless time_utils/console_output
+    helper modules for the pure pieces of that work.
     """
     def __init__(self) -> None:
         """
         Initializes a ProgressTracker instance
         and defines class attributes.
+
+        Returns:
+            None.
         """
         # defining class attributes (shared by all subclasses)
 
         # time
-        self.start_time = self.get_current_time()
-        self.current_time = self.get_current_time()
+        self.start_time = get_current_time()
+        self.current_time = get_current_time()
         self.elapsed_time = 0
         self.elapsed_time_str = ''
         self.etc = 0
@@ -46,6 +56,7 @@ class ProgressTracker:
         # iteration
         self.iterations_num = 0
         self.current_iteration = 0
+        self.skipped_iterations = 0
         self.totals_updated = Event()
 
         # progress
@@ -77,27 +88,57 @@ class ProgressTracker:
         """
         Waits given time in seconds
         before proceeding with execution.
+
+        Args:
+            seconds (float): The number of seconds to wait.
+
+        Returns:
+            None.
         """
         # sleeping
         sleep(seconds)
 
-    def print_totals(self) -> None:
+    def reset_timer(self) -> None:
         """
-        Prints iterations totals.
-        """
-        # clearing console
-        self.clear_progress()
+        Resets start time to be more
+        reliable when after user inputs
+        or iterations calculations.
 
-        # printing totals string
-        print(self.totals_string)
+        Returns:
+            None.
+        """
+        # resetting start time
+        self.start_time = get_current_time()
+
+    def update_time_attributes(self) -> None:
+        """
+        Updates time related attributes.
+
+        Returns:
+            None.
+        """
+        # updating time attributes
+        self.current_time = get_current_time()
+        self.elapsed_time = get_elapsed_time(start_time=self.start_time,
+                                             current_time=self.current_time)
+        self.elapsed_time_str = get_time_str(time_in_seconds=self.elapsed_time)
+        self.etc = get_etc(iterations_num=self.iterations_num,
+                           current_iteration=self.current_iteration,
+                           skipped_iterations=self.skipped_iterations,
+                           elapsed_time=self.elapsed_time)
+        self.etc_str = get_time_str(time_in_seconds=self.etc)
 
     def signal_totals_updated(self) -> None:
         """
         Sets threading.Event as set,
         signaling totals updated.
+
+        Returns:
+            None.
         """
         # printing totals
-        self.print_totals()
+        print_totals(totals_string=self.totals_string,
+                     progress_string=self.progress_string)
 
         # signaling the progress tracker to stop
         self.totals_updated.set()
@@ -111,6 +152,12 @@ class ProgressTracker:
         """
         Defines base method to obtain
         and update total iterations num.
+
+        Args:
+            args_dict (dict): A dictionary containing all parsed command-line arguments.
+
+        Returns:
+            None.
         """
         # updating attributes
         self.iterations_num = 1
@@ -126,6 +173,9 @@ class ProgressTracker:
     def update_wheel_symbol(self) -> None:
         """
         Updates wheel symbol.
+
+        Returns:
+            None.
         """
         # getting updated wheel index
         if self.wheel_index == 3:
@@ -142,107 +192,14 @@ class ProgressTracker:
             # overwriting if final event is set
             self.wheel_symbol = '\b'
 
-    @staticmethod
-    def get_current_time() -> int:
-        """
-        Gets current UTC time, in seconds.
-        """
-        # getting current time
-        current_time = time()
-
-        # getting seconds
-        current_seconds = int(current_time)
-
-        # returning current time in seconds
-        return current_seconds
-
-    def reset_timer(self) -> None:
-        """
-        Resets start time to be more
-        reliable when after user inputs
-        or iterations calculations.
-        """
-        # resetting start time
-        self.start_time = self.get_current_time()
-
-    def get_elapsed_time(self) -> int:
-        """
-        Returns time difference
-        between start time and
-        current time, in seconds.
-        """
-        # getting elapsed time (time difference)
-        elapsed_time = self.current_time - self.start_time
-
-        # returning elapsed time
-        return elapsed_time
-
-    def get_etc(self) -> int:
-        """
-        Based on iteration and time
-        attributes, returns estimated time
-        of completion (ETC).
-        """
-        # defining base value for etc
-        etc = 3600
-
-        # getting iterations to go
-        iterations_to_go = self.iterations_num - self.current_iteration
-
-        # checking if first iteration is running
-        if self.current_iteration >= 1:
-
-            # calculating estimated time of completion
-            etc = iterations_to_go * self.elapsed_time / self.current_iteration
-
-            # rounding time
-            etc = round(etc)
-
-            # converting estimated time of completion to int
-            etc = int(etc)
-
-        # returning estimated time of completion
-        return etc
-
-    def update_time_attributes(self) -> None:
-        """
-        Updates time related attributes.
-        """
-        # updating time attributes
-        self.current_time = self.get_current_time()
-        self.elapsed_time = self.get_elapsed_time()
-        self.elapsed_time_str = get_time_str(time_in_seconds=self.elapsed_time)
-        self.etc = self.get_etc()
-        self.etc_str = get_time_str(time_in_seconds=self.etc)
-
-    @staticmethod
-    def get_percentage_string(percentage: int) -> str:
-        """
-        Given a value in percentage,
-        returns value as a string,
-        adding '%' to the right side.
-        """
-        # updating value to be in range of 2 digits
-        percentage_str = get_number_string(num=percentage,
-                                           digits=2)
-
-        # assembling percentage string
-        percentage_string = f'{percentage_str}%'
-
-        # checking if percentage is 100%
-        if percentage == 100:
-
-            # updating percentage string
-            percentage_string = '100%'
-
-        # returning percentage string
-        return percentage_string
-
     def get_progress_percentage(self) -> int:
         """
-        Returns a formated progress
-        string based on current iteration
+        Returns progress percentage
+        based on current iteration
         and iterations num.
+
+        Returns:
+            int: The rounded progress percentage.
         """
         # getting percentage progress
         try:
@@ -259,12 +216,15 @@ class ProgressTracker:
 
     def get_progress_string(self) -> str:
         """
-        Returns a formated progress
+        Returns a formatted progress
         string, based on current progress
+        attributes. Provides a generalist
+        progress bar - can be overwritten
+        to consider module specific
         attributes.
-        !Provides a generalist progress bar.
-        Can be overwritten to consider module
-        specific attributes!
+
+        Returns:
+            str: The current progress string.
         """
         # assembling current progress string
         progress_string = f''
@@ -293,17 +253,24 @@ class ProgressTracker:
 
     def update_progress_string(self) -> None:
         """
-        Updates progress string related attributes.
+        Updates progress string related
+        attributes.
+
+        Returns:
+            None.
         """
         # updating progress percentage attributes
         self.progress_percentage = self.get_progress_percentage()
-        self.progress_percentage_str = self.get_percentage_string(percentage=self.progress_percentage)
+        self.progress_percentage_str = get_percentage_string(percentage=self.progress_percentage)
         self.progress_string = self.get_progress_string()
 
     def flush_progress(self) -> None:
         """
         Gets updated progress string and
         flushes it on the console.
+
+        Returns:
+            None.
         """
         # updating wheel symbol attributes
         self.update_wheel_symbol()
@@ -314,37 +281,14 @@ class ProgressTracker:
         # showing progress message
         flush_string(string=self.progress_string)
 
-    def clear_progress(self) -> None:
-        """
-        Given a string, writes empty space
-        to cover string size in console.
-        """
-        # getting current progress string
-        string = self.progress_string
-
-        # getting string length
-        string_len = len(string)
-
-        # creating empty line
-        empty_line = ' ' * string_len
-
-        # creating backspace line
-        backspace_line = '\b' * string_len
-
-        # writing string
-        stdout.write(empty_line)
-
-        # flushing console
-        stdout.flush()
-
-        # resetting cursor to start of the line
-        stdout.write(backspace_line)
-
     def signal_stop(self) -> None:
         """
         Sets threading.Event as set,
         signaling progress tracker
         to stop.
+
+        Returns:
+            None.
         """
         # signaling the progress tracker to stop
         self.process_complete.set()
@@ -357,6 +301,9 @@ class ProgressTracker:
         """
         Uses os _exit to force
         quit all running threads.
+
+        Returns:
+            None.
         """
         # using os exit to exit program
         _exit(1)
@@ -367,6 +314,12 @@ class ProgressTracker:
         """
         Prints message and
         kills all threads.
+
+        Args:
+            message (str): The message to print before quitting.
+
+        Returns:
+            None.
         """
         # printing spacer
         print()
@@ -382,6 +335,9 @@ class ProgressTracker:
         Runs progress tracking loop, updating
         progress attributes and printing
         progress message on each iteration.
+
+        Returns:
+            None.
         """
         # checking stop condition and running loop until stop event is set
         while not self.process_complete.is_set():
@@ -401,6 +357,9 @@ class ProgressTracker:
     def start_thread(self) -> None:
         """
         Starts progress thread.
+
+        Returns:
+            None.
         """
         # starting progress tracker in a separate thread
         self.progress_thread.start()
@@ -409,6 +368,9 @@ class ProgressTracker:
         """
         Stops progress bar monitoring
         and finished execution thread.
+
+        Returns:
+            None.
         """
         # joining threads to ensure progress thread finished cleanly
         self.progress_thread.join()
@@ -417,6 +379,9 @@ class ProgressTracker:
         """
         Prints process complete message
         before terminating execution.
+
+        Returns:
+            None.
         """
         # defining final message
         f_string = f'\n'
@@ -429,6 +394,9 @@ class ProgressTracker:
         """
         Prints exception message
         before terminating execution.
+
+        Returns:
+            None.
         """
         # defining error message
         e_string = f'\n'
@@ -443,6 +411,12 @@ class ProgressTracker:
         """
         Prints exception message
         before terminating execution.
+
+        Args:
+            exception (Exception): The exception to print before quitting.
+
+        Returns:
+            None.
         """
         # defining error message
         e_string = f'\n'
@@ -454,12 +428,19 @@ class ProgressTracker:
         self.exit(message=e_string)
 
     def run(self,
-            function: callable,  # noqa
-            args_parser: callable  # noqa
+            function: Callable,
+            args_parser: Callable
             ) -> None:
         """
         Runs given function monitoring
         progress in a separate thread.
+
+        Args:
+            function (Callable): The function to run, monitored by the progress tracker.
+            args_parser (Callable): The function that parses and returns the command-line arguments dict.
+
+        Returns:
+            None.
         """
         # getting args dict
         args_dict = args_parser()
