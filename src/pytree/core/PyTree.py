@@ -11,12 +11,12 @@
 from sys import platform
 from pytree.shared.data import save_df
 from pytree.shared.filter import is_cache
-from pytree.core.scanner import TreeScanner
 from pytree.shared.size import get_size_str
 from pytree.core.converter import dict_to_df
 from pytree.shared.loc import get_loc_com_str
 from pytree.shared.path import get_path_depth
 from pytree.core.converter import dict_to_tree
+from pytree.core.TreeScanner import TreeScanner
 from pytree.shared.global_vars import CACHE_FOLDERS
 from pytree.progress_tracker.ModuleProgressTracker import ModuleProgressTracker
 
