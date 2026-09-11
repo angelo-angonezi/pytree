@@ -92,17 +92,19 @@ def small_tree(tmp_path: Path) -> tuple:
     file_a_loc = 2
     file_a_com = 2
 
-    # writing file_a
+    # writing file_a (as raw bytes, so Windows' text-mode "\n" -> "\r\n"
+    # newline translation can't desync the on-disk size from the
+    # hand-computed len(content.encode()) below)
     file_a = sub1 / 'file_a.py'
-    file_a.write_text(file_a_content)
+    file_a.write_bytes(file_a_content.encode())
 
     # defining file_b content (plain, non-python, fixed-size file)
     file_b_content = '0123456789'
     file_b_size = len(file_b_content.encode())
 
-    # writing file_b
+    # writing file_b (as raw bytes, for the same reason as file_a above)
     file_b = sub1 / 'file_b.txt'
-    file_b.write_text(file_b_content)
+    file_b.write_bytes(file_b_content.encode())
 
     # writing a file inside the cache folder (must never be counted)
     cache_file = cache_folder / 'cache_file.pyc'
