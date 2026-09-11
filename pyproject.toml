@@ -34,6 +34,8 @@ dev = ["build>=1.4.2",
        "twine>=6.2.0",
        "wheel>=0.46.3",
        "setuptools>=82.0.1"]
+test = ["pytest>=8.0",
+        "pytest-timeout>=2.3"]
 
 [project.scripts]
 pytree = "pytree.main:main"
@@ -43,3 +45,8 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: golden-master tests against the real test_folder/ fixture"]
+addopts = "-ra --strict-markers"
